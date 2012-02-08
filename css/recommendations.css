@@ -1,0 +1,23 @@
+
+.rec{
+ float:left;
+ height:210px;
+ width:310px;
+ padding-top:20px;
+ padding-left:50px;
+}
+
+.rec img{
+ width:303px;
+}
+
+.subti{
+ font-size:12px;
+}
+
+.ti{
+ font-size:16px;
+ height:36px;
+ color:white;
+}
+

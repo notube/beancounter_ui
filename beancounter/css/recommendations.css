@@ -1,0 +1,58 @@
+#recs_items{
+
+}
+
+.programme{
+
+ padding-top:20px;
+ padding-bottom:20px;
+// padding:20px;
+ margin-left:50px;
+ margin-right:50px;
+ border-bottom-style: dotted ;
+ border-bottom-color: #5F6C72;
+ border-bottom-width: 1px;
+}
+
+.programme img{
+ width:100px;
+ float:left;
+}
+
+.p_title{
+  font-size:20px;
+  padding-left:20px;
+  font-weight:bold;
+}
+
+.description{
+  padding-left:20px;
+  font-size:14px;
+}
+.explain_small{
+  padding-left:20px;
+  font-size:14px;
+}
+
+.rec{
+ float:left;
+ height:210px;
+ width:310px;
+ padding-top:20px;
+ padding-left:50px;
+}
+
+.rec img{
+ width:303px;
+}
+
+.subti{
+ font-size:12px;
+}
+
+.ti{
+ font-size:16px;
+ height:36px;
+ color:white;
+}
+

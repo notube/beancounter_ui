@@ -1,0 +1,216 @@
+<html>
+<head>
+<link type="text/css" rel="stylesheet" href="css/main.css" />
+<link type="text/css" rel="stylesheet" href="css/activities.css" />
+  <script type="text/javascript" src="../lib/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="utils.js"></script>
+  <script type="text/javascript" id="activities"></script>
+  <script type="text/javascript" id="activities" src="create_activities.js"></script>
+  <script type="text/javascript">
+
+
+var username;
+var user_id;
+
+//check for saved u/p
+//and prompt for login / signup if not found
+//else send straight elsewhere (activities page?)
+
+function init(){
+
+  //@@should be mre secure
+  var creds = localStorage.getItem("creds");
+  if(creds){
+    var arr = creds.split("|");
+    username = arr[0];
+    $("#your_name").html(username);
+    get_activities(username,"");
+  }else{
+//no creds -
+    send_to_login_signup();
+  }
+
+}
+
+function send_to_login_signup(){
+  document.location="signup.html";
+}
+
+
+function render_activities(data){
+console.log(data);
+  var html = [];
+  user_id = data["object"]["id"];
+
+  visibility = data["object"]["visibility"];
+  if(visibility=="private"){
+    $("#profile_status").html("<img src=\"images/lock_large.png\" />Your profile is private");
+  }else{
+    $("#profile_status").html("Your profile is public");
+  }
+
+//these activities should be ordered@@ not workie...
+
+  var interests = data["object"]["interests"];
+
+  var activities = {};
+  var interests_activities = {};
+
+//loop throug so we can sort them properly
+  for(var i in interests){
+    var ins = interests[i];
+    var term = ins["reference"];
+    term = term.replace(/.*\//,"");
+    term = term.replace(/_/g," ");
+    var acts = ins["activities"];
+    for (var a in acts){
+       var act = acts[a];
+       var act2 = activities[act["object"]["url"]];
+//munging so we can sort them
+       if(act2){
+
+          if(act2["interests"]){
+            act2["interests"].push(term);
+          }else{
+console.log("xx");
+          }
+       }else{
+          var arr2 = [];
+          arr2.push[term];
+          act["interests"]=arr2;
+          activities[act["object"]["url"]]=act;
+       }
+    }
+  }
+
+
+console.log("activities");
+console.log(activities);
+
+  var tuples = [];
+
+  for (var a in activities) tuples.push([a, activities[a]["context"]["date"]]);
+
+  tuples.sort(function(a, b) {
+         a = new Date(a[1]);
+         b = new Date(b[1]);
+
+         return a > b ? -1 : (a < b ? 1 : 0);
+  });
+
+
+  for (var i = 0; i < tuples.length; i++) {
+
+       var act = activities[tuples[i][0]];
+
+       var date = act["context"]["date"];
+       var interests =  act["interests"];
+       var verb = act["verb"];
+       var hashtag = act["object"]["hashTags"][0];
+       var service = act["context"]["service"];
+       var d = act["context"]["date"];
+       var url = act["object"]["url"];
+       var text = act["object"]["text"];
+       html.push("<div class=\"activity\">You "+verb+"ed");
+       if(interests.length>0){
+            html.push(" about <a href=\""+url+"\">"+interests.join(", ")+"</a>");
+       }
+       html.push(" on <a href=\""+url+"\">"+service+"</a><br />'"+text+"'<br /><span class='teeny'>"+process_date(date)+"</span></div>");
+  }
+
+  $("#foo").html(html.join("\n"));
+/*
+    html.push("<div class=\"activity\"><span class='activity_text'>You "+ww+" <a 
+target='_blank' href='http://www.bbc.co.uk/programmes/"+pid+"'>"+title+"</a> <img 
+class='tiny_pie' src='"+pie+"'/></span><br /><span 
+class='teeny'>"+process_date(ttt)+"</span></div>");
+*/
+
+}
+
+/*
+function process_date(d){
+  var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+  var months = 
+["January","February","March","April","May","June","July","August","September","October","N
+ovember","December"];
+
+  var then = new Date(d);
+  var now = new Date();
+
+  var a_week_ago = new Date();
+  a_week_ago.setDate(a_week_ago.getDate() - 7);
+
+  var date_text = "";
+
+  if(then.getDate()==now.getDate() && then.getMonth()==now.getMonth() && then.getYear()==no
+w.getYear()){
+    var hrs = now.getHours() - then.getHours();
+    date_text = ""+parseInt(hrs)+" hours ago";
+  }else{
+
+    if(then > a_week_ago){
+      date_text = "Last "+days[then.getDay()]; 
+    }else{
+      var yr = then.getYear()+1900;
+      date_text = days[then.getDay()]+", "+then.getDate()+" "+months[then.getMonth()]+" "+yr;
+    }
+  }
+  return date_text;
+}
+
+*/
+</script>
+
+<body onload="init()">
+
+
+ <div class='header'>
+
+  <div id="header">
+   <div class='title'>BEANCOUNTER</div>
+    <br clear='both' />
+   <div class='subtitle'>Personalise your TV recommendations based on what you do and say on
+the web</div>
+
+
+   <div class="settings nav" style="padding-top:5px;min-width:120px;" onclick="pulldown()">
+       <span id="your_name"></span>
+       <img src="images/settings.png" style="padding-top:2px;"/>
+       <div id="dropdown">
+         <div class="drop" id="profile_status"></div>
+         <div class="drop"><a onclick="go_to_settings()">Settings</a></div>
+         <div class="drop"><a onclick="logout()">Log out</a></div>
+       </div>
+   </div>
+
+
+   <div class="settings nav"><a href="recommendations.html">RECOMMENDATIONS</a></div>
+   <div class="settings nav"><a href="analytics.html">ANALYTICS</a></div>
+   <div class="settings nav"><a href="interests.html">INTERESTS</a></div>
+   <div class="settings nav selected"><a href="activities.html">ACTIVITIES</a></div>
+
+
+  </div>
+ </div>
+
+ <br clear='both' />
+<div id="foo"></div>
+
+ <br clear='both' />
+
+
+ <div id="footer">
+
+   <div class="text">Powered by NoTube</div>
+   <div class="text">Privacy Policy</div>
+   <div class="text">Use NoTube's N-Screen to see suggested TV
+content based on your interests <a href="">Go to N-Screen</a> </div>
+
+ </div>
+
+
+</body>
+
+</html>

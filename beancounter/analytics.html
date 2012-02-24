@@ -1,12 +1,15 @@
 <html>
 <head>
-<link type="text/css" rel="stylesheet" href="../css/main.css" />
-<link type="text/css" rel="stylesheet" href="../css/analytics.css" />
+<link type="text/css" rel="stylesheet" href="css/main.css" />
+<link type="text/css" rel="stylesheet" href="css/analytics.css" />
 <script type="text/javascript" src="../lib/jquery-1.7.1.min.js"></script>
-<script type="text/javascript" src="get_logfile.js"></script>
-<script language="javascript" type="text/javascript" src="../lib/flot/jquery.flot.js"></script>
-<script language="javascript" type="text/javascript" src="../lib/flot/jquery.flot.pie.js"></script>
-<script language="javascript" type="text/javascript" src="../lib/flot/jquery.flot.stack.js"></script>
+<script type="text/javascript" src="utils.js"></script>
+<script type="text/javascript" src="process_analytics_data.js"></script>
+<script type="text/javascript" id="activities"></script>
+<script type="text/javascript" id="profile"></script>
+<script language="javascript" type="text/javascript" src="lib/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="lib/flot/jquery.flot.pie.js"></script>
+<script language="javascript" type="text/javascript" src="lib/flot/jquery.flot.stack.js"></script>
 
 <script type="text/javascript">
 
@@ -14,11 +17,31 @@
 var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 var short_months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var user_id;
+//  user_id = data["object"]["id"];
 
 
 function go(data){
-  init(callback);
+
+  var creds = localStorage.getItem("creds");
+
+  if(creds){
+    var arr = creds.split("|");
+    username = arr[0];
+    $("#your_name").html(username);
+    init(username,callback);
+  }else{
+//no creds -
+    send_to_login_signup();
+  }
+
 }
+
+function send_to_login_signup(){
+  document.location="signup.html";
+}
+
+
 
 
 //up to three pie charts are allowed in this particular one
@@ -39,7 +62,7 @@ function callback(result){
   var html4 = [];
   var c = 0;
 
-//first find type single_text, single_numeric
+//first find type text or numbe
 
   for(var r in result){
     var ty = result[r]["type"];
@@ -87,7 +110,7 @@ function callback(result){
     //one only of activities, either a simple list (one thing per 
     //datetime) or grouped by datetime
 
-    if(ty=="activities_list" && val.length>0){
+    if(ty=="actvities_list" && val.length>0){
      $("#schedule").find(".title").html(maintext);
      $("#schedule").show();
      for(var a in val){
@@ -103,8 +126,23 @@ function callback(result){
      var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
      var num_days = 0;
      var now = new Date();  
-     for (var d in val){
-       var schedule = val[d];
+//sort
+
+     var tuples = [];
+
+     for (var key in val) tuples.push([key, val[key]]);
+
+       tuples.sort(function(a, b) {
+         a = new Date(a[0]);
+         b = new Date(b[0]);
+
+         return a > b ? -1 : (a < b ? 1 : 0);
+      });
+
+
+      for (var i = 0; i < tuples.length; i++) {
+       var d = tuples[i][0];
+       var schedule = tuples[i][1];
 
        var dat = new Date(d);
        var diff_dat =  now - dat;
@@ -138,7 +176,7 @@ function callback(result){
 
     if(ty=="top_five"){
       $("#top_five_container").find(".title").html(maintext);
-      the_top_five(val);
+      make_top_five(val);
     }
 
     //top two over the last 6 months
@@ -150,11 +188,15 @@ function callback(result){
 
   }
 
-  $("#second_row").html(html4.join("\n"));
-  $("#top_row").html(html.join("\n"));
+
+  $("#second_row").append(html4.join("\n"));
+
+  $("#top_row").append(html.join("\n"));
+
   $(".single").show();
 
-  $("#schedule_table").html(html2.join("<br />\n"));
+  $("#schedule_table").append(html2.join("<br />\n"));
+
   $("#text_list").html(html3.join("<br />\n"));
 
 }
@@ -316,6 +358,9 @@ function make_top_five(the_top_five){
     var textcol="#999";
     var width=-140;
 
+console.log("top_five");
+console.log(top_five);
+
     for (var r in top_five_current){
       var o = plot.pointOffset({ x: 0, y: r});
       comparison_bar.append('<div style="width:120px;position:absolute;left:' + (o.left+width) + 'px;top:' + (o.top+30) + 'px;color:'+textcol+';">'+top_five[r]+'</div>');
@@ -378,13 +423,35 @@ function make_top_two(the_top_two){
 
 <body onload="go()">
 
-   <div id="header">
-     <div class='title'>BEANCOUNTER</div>
-     <br clear='both' />
-     <div class='subtitle'>Visualising IRC logs from NoTube</div>
 
+ <div class='header'>
+
+  <div id="header">
+   <div class='title'>BEANCOUNTER</div>
+    <br clear='both' />
+   <div class='subtitle'>Personalise your TV recommendations based on what you do and say on
+the web</div>
+
+
+   <div class="settings nav" style="padding-top:5px;min-width:120px;" onclick="pulldown()">
+       <span id="your_name"></span>
+       <img src="images/settings.png" style="padding-top:2px;"/>
+       <div id="dropdown">
+         <div class="drop" id="profile_status"></div>
+         <div class="drop"><a onclick="go_to_settings()">Settings</a></div>
+         <div class="drop"><a onclick="logout()">Log out</a></div>
+       </div>
    </div>
 
+
+
+   <div class="settings nav"><a href="recommendations.html">RECOMMENDATIONS</a></div>
+   <div class="settings nav selected"><a href="analytics.html">ANALYTICS</a></div>
+   <div class="settings nav"><a href="interests.html">INTERESTS</a></div>
+   <div class="settings nav"><a href="activities.html">ACTIVITIES</a></div>
+
+  </div>
+ </div>
 
    <div class="analytics" id="analytics_content">
 
@@ -400,7 +467,7 @@ function make_top_two(the_top_two){
      </div>
 
 
-     <div class="text_list" id="text_list" style="max-width:80%">
+     <div class="text_list" id="text_list">
        <div class="title"></div>
        <div class="" id="text_list_content"></div>
      </div>
@@ -450,9 +517,15 @@ function make_top_two(the_top_two){
 
    <br clear='both' />
 
-   <div id="footer">
-     <div class="text"></div>
-   </div>
+ <div id="footer">
+
+   <div class="text">Powered by NoTube</div>
+   <div class="text">Privacy Policy</div>
+   <div class="text">Use NoTube's N-Screen to see suggested TV
+content based on your interests <a href="">Go to N-Screen</a> </div>
+
+ </div>
+
 
 </body>
 

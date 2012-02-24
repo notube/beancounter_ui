@@ -1,0 +1,251 @@
+<html>
+<head>
+<script type="text/javascript" src="../lib/jquery-1.7.1.min.js"></script>
+<script  type="text/javascript" src="utils.js"></script>
+<script id="newstuff" type="text/javascript"></script>
+<link type="text/css" rel="stylesheet" href="css/main.css" />
+<link type="text/css" rel="stylesheet" href="css/settings.css" />
+
+
+<script type ="text/javascript">
+
+var username;
+
+//check for saved u/p
+//and prompt for login / signup if not found
+//else send straight elsewhere (activities page?)
+
+function init(){
+
+  //@@should be mre secure
+  var creds = localStorage.getItem("creds");
+
+  var settings = localStorage.getItem("settings");
+  //var creds = null;
+  if(creds && settings){
+    var arr = creds.split("|");
+    username = arr[0];
+    $("#your_name").html(username);  
+      select_data_sources();
+  }else{
+    if(creds){
+      var arr = creds.split("|");
+      username = arr[0];
+      $("#your_name").html(username); 
+      select_data_sources();
+    }else{
+      $(".signin").show();
+      send_to_login_signup();
+    }
+  }
+
+//    send_to_login_signup();
+
+}
+
+function send_to_login_signup(){
+  document.location="signup.html";
+}
+
+
+function send_to_analytics(){
+  document.location="analytics.html";
+}
+
+function send_to_interests(){
+  document.location="interests.html";
+}
+
+function select_data_sources(){
+//username needs checking for here
+
+   if(!username){
+
+     alert("no username");
+
+   }else{
+    var url = bc_url+"user/"+username+"?apikey="+app_key;
+
+//    $("#newstuff").attr("src",url);
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+          write_data_sources(data);
+        },
+        error: function(data){
+          console.log("not ok 3 "+data["status"]+" "+data["message"]);
+          alert("failed");
+        }
+      });
+
+
+    $("#initial_signup").hide();//??
+    $("#data_sources").show();//??
+
+  }
+
+}
+
+///add services
+
+
+function send_to_service(service){
+
+
+ if(!username){
+  alert("no username");
+ }else{
+
+   if(service=="twitter"){
+
+     var url =bc_url+"user/oauth/token/twitter/"+username+"?redirect=http://"+return_part+settings.html";
+
+     window.open(url);
+   }else if(service=="facebook"){
+     var url =bc_url+"user/oauth/token/facebook/"+username+"?redirect=http://"+return_part+"settings.html";
+     window.open(url);
+   }else if(service=="lastfm"){
+
+     var url ="http://www.last.fm/api/auth/?api_key=9f57b916d7ab90a7bf562b9e6f2385f0&cb="+bc_url+"user/auth/callback/lastfm/"+username+"/"+encodeURIComponent(encodeURIComponent(return_part+"settings.html"));
+console.log(url);
+     window.open(url);
+
+   }else{
+alert("not implemented yet "+service);
+   }
+
+ }
+
+
+}
+
+function write_data_sources(data){
+  console.log(data);
+
+  var all_services = ["facebook","twitter","lastfm","gomiso"];
+  var services = data["object"]["services"];
+
+console.log(services);
+
+  for (var s in all_services){
+     var ss = all_services[s];
+     var serv = $.inArray(ss, services)
+
+     if(serv!=-1){
+       $("#"+ss).find(".grey").html("Added");
+       $("#"+ss).find(".grey").show();
+       $("#"+ss).find(".blue").html("Remove");
+       $("#"+ss).unbind('click');
+       $("#"+ss).click(function() {
+        var pid = $(this).attr("id");
+        alert("not implemented yet - service "+pid+" should be removed here");
+        return false;
+       })
+     }else{
+       $("#"+ss).unbind('click');
+       $("#"+ss).click(function() {
+        var pid = $(this).attr("id");
+        send_to_service(pid);
+        return false;
+       })
+
+     }
+
+  }
+  
+
+}
+
+
+function logout(){
+  localStorage.removeItem("creds");
+  document.location="signup.html";
+}
+
+</script>
+
+
+</head>
+
+<body onload="init()">
+
+ <div class='header'>
+ <div id="header">
+   <div class='title'>BEANCOUNTER</div>
+   <div class="signin" style="display:none">
+     Already a member? Sign in: 
+     <form onsubmit='check_signin();return false;' id="signin">
+      <span class='normal'>Username:</span> <input  type="text" name="username"/>
+      <span class='normal'>Password:</span> <input  type="password" name="password"/>
+      <button name="next" value="next" class=''>SIGN IN</button>
+     </form>
+
+   </div>
+    <br clear='left' />
+   <div class='subtitle'>Personalise your TV recommendations based on what you do and say on the Web</div>
+
+
+   <div class="settings nav" style="padding-top:5px;min-width:120px;" onclick="pulldown()">
+       <span id="your_name"></span>
+       <img src="images/settings.png" style="padding-top:2px;"/>
+       <div id="dropdown">
+         <div class="drop"><a onclick="go_to_settings()">Settings</a></div>
+         <div class="drop"><a onclick="logout()">Log out</a></div>
+       </div>
+   </div>
+
+   <div class="settings" id="profile_status"></div>
+
+
+
+ </div>
+ </div>
+
+ <br clear='both' />
+
+
+ <div id="whitebox" class="whitebox">
+   <div class="options">
+     <div class="title">Your settings</div>
+     <div id="step1" class="option selected">DATA SOURCES</div>
+     <div id="step2" class="option">PRIVACY AND SHARING</div>
+     <div id="step3" class="option">EXPORT / DELETE</div>
+   </div>
+   <div class="actions" id="actions">
+     <div id="data_sources">
+       <div class='normal'>You can remove or add sources here.</div>
+       <div style='padding:50px;' id="sources_list">
+         <div id='facebook'><img src='images/fb.png'><span class='grey'></span><span class='blue'>Add your Facebook account</span></div><br />
+         <div id='twitter'><img src='images/twitter.png'><span class='grey'></span><span class='blue'>Add your Twitter account</span></div><br />
+         <div id='lastfm'><img src='images/lfm.png'><span class='grey'></span><span class='blue'>Add your Last.fm account</span></div><br />
+<!--
+         <div id='gomiso'><img src='images/gomiso.png'><span class='grey'></span><span class='blue'>Add your GoMiso account</span></div><br />
+-->
+       <div>
+      <button name="next" value="next" class='submit' onclick='send_to_interests()'>SEE YOUR PROFILE</button>
+     <div>
+
+   </div>
+ </div>
+
+    <br clear='both' />
+ 
+ <div id="footer">
+
+   <div class="text">Powered by NoTube</div>
+   <div class="text">Privacy Policy</div>
+   <div class="text"> <a href="">Go to N-Screen</a> </div>
+   <div class="text">Use NoTube's N-Screen to see suggested TV
+content based on your interests</div>
+
+ </div>
+
+</body>
+
+</html>
+
+
+

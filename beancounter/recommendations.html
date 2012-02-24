@@ -1,0 +1,92 @@
+<html>
+<head>
+<link type="text/css" rel="stylesheet" href="css/main.css" />
+<link type="text/css" rel="stylesheet" href="css/recommendations.css" />
+  <script type="text/javascript" src="../lib/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="utils.js"></script>
+  <script type="text/javascript" id="recs"></script>
+  <script type="text/javascript" id="activities" src="create_recommendations.js"></script>
+  <script type="text/javascript">
+
+
+var username;
+var user_id;
+
+//check for saved u/p
+//and prompt for login / signup if not found
+//else send straight elsewhere (activities page?)
+
+function init(){
+
+  //@@should be mre secure
+  var creds = localStorage.getItem("creds");
+  if(creds){
+    var arr = creds.split("|");
+    username = arr[0];
+    $("#your_name").html(username);
+    get_recommendations(username,"");
+  }else{
+//no creds -
+    send_to_login_signup();
+  }
+
+}
+
+function send_to_login_signup(){
+  document.location="signup.html";
+}
+
+
+
+</script>
+
+<body onload="init()">
+
+
+ <div class='header'>
+
+  <div id="header">
+   <div class='title'>BEANCOUNTER</div>
+    <br clear='both' />
+   <div class='subtitle'>Personalise your TV recommendations based on what you do and say on
+the web</div>
+
+
+   <div class="settings nav" style="padding-top:5px;min-width:120px;" onclick="pulldown()">
+       <span id="your_name"></span>
+       <img src="images/settings.png" style="padding-top:2px;"/>
+       <div id="dropdown">
+         <div class="drop" id="profile_status"></div>
+         <div class="drop"><a onclick="go_to_settings()">Settings</a></div>
+         <div class="drop"><a onclick="logout()">Log out</a></div>
+       </div>
+   </div>
+
+
+   <div class="settings nav selected"><a href="recommendations.html">RECOMMENDATIONS</a></div>
+   <div class="settings nav"><a href="analytics.html">ANALYTICS</a></div>
+   <div class="settings nav"><a href="interests.html">INTERESTS</a></div>
+   <div class="settings nav"><a href="activities.html">ACTIVITIES</a></div>
+
+  </div>
+ </div>
+
+ <br clear='both' />
+<div id="recs_items"></div>
+
+ <br clear='both' />
+
+
+ <div id="footer">
+
+   <div class="text">Powered by NoTube</div>
+   <div class="text">Privacy Policy</div>
+   <div class="text">Use NoTube's N-Screen to see suggested TV
+content based on your interests <a href="">Go to N-Screen</a> </div>
+
+ </div>
+
+
+</body>
+
+</html>

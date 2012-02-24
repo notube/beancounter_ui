@@ -4,8 +4,7 @@ var bc_url ="http://moth.notube.tv/notube-platform/rest/";
 var app_key = "ecb1e9fc90d14b63a3fe70497cbf1d69";
 var n_screen_api_root="http://nscreen.notu.be/iplayer_dev/api/";
 
-//open and close teh settings button
-
+//open and close the settings button
 
 function pulldown(){
  $("#dropdown").toggle();

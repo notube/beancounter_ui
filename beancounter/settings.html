@@ -26,7 +26,7 @@ function init(){
     var arr = creds.split("|");
     username = arr[0];
     $("#your_name").html(username);  
-      select_data_sources();
+    select_data_sources();
   }else{
     if(creds){
       var arr = creds.split("|");
@@ -101,7 +101,7 @@ function send_to_service(service){
 
    if(service=="twitter"){
 
-     var url =bc_url+"user/oauth/token/twitter/"+username+"?redirect=http://"+return_part+settings.html";
+     var url =bc_url+"user/oauth/token/twitter/"+username+"?redirect=http://"+return_part+"settings.html";
 
      window.open(url);
    }else if(service=="facebook"){
@@ -224,9 +224,9 @@ function logout(){
 <!--
          <div id='gomiso'><img src='images/gomiso.png'><span class='grey'></span><span class='blue'>Add your GoMiso account</span></div><br />
 -->
-       <div>
+       </div>
       <button name="next" value="next" class='submit' onclick='send_to_interests()'>SEE YOUR PROFILE</button>
-     <div>
+     </div>
 
    </div>
  </div>

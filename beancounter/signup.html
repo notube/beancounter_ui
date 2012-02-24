@@ -268,7 +268,7 @@ function write_data_sources(data){
 
    </div>
 
-    <br clear='left' />
+   <br clear='left' />
    <div class='subtitle'>Personalise your TV recommendations based on what you do and say on the Web</div>
 
    <div class="settings nav" style="padding-top:5px;min-width:120px;" onclick="pulldown()">
@@ -286,21 +286,25 @@ function write_data_sources(data){
  </div>
  </div>
 
+
  <br clear='both' />
 
 
  <div id="whitebox" class="whitebox">
-
    <div class="options">
      <div class="title">Sign Up</div>
      <div id="step1" class="option selected">STEP 1: SIGN UP</div>
      <div id="step2" class="option">STEP 2: ADD DATA SOURCES</div>
      <div id="step3" class="option">STEP 3: VIEW YOUR PROFILE</div>
    </div>
+
    <div class="actions" id="actions">
+
      <div id="initial_signup">
-<!-- style="display:none;">-->
+
      <div class="option">You're only three steps away from getting personalised TV recommendations!</div>
+
+
      <form onsubmit='check_signup();return false;' id="signup">
       <span class='normal' style='padding-right:100px;'>Username:</span> <input class='input' type="text" name="username"/>
       <span class='message' id='u_msg'></span>
@@ -326,6 +330,7 @@ if you wish.</span></li>
 
      </form>
      </div>
+     </div>
      <div id="data_sources" style="display:none;">
        <div class='bold'>To get started you need to add one or more sources of activity data.</div>
        <div class='normal'>You can remove or add sources at any time.</div>
@@ -333,17 +338,16 @@ if you wish.</span></li>
          <div id='facebook'><img src='images/fb.png'><span class='grey'></span><span class='blue'>Add your Facebook account</span></div><br />
          <div id='twitter'><img src='images/twitter.png'><span class='grey'></span><span class='blue'>Add your Twitter account</span></div><br />
          <div id='lastfm'><img src='images/lfm.png'><span class='grey'></span><span class='blue'>Add your Last.fm account</span></div><br />
-<!--
-         <div id='gomiso'><img src='images/gomiso.png'><span class='grey'></span><span class='blue'>Add your GoMiso account</span></div><br />
--->
-       <div>
+       </div>
       <button name="next" value="next" class='submit' onclick='send_to_interests()'>SEE YOUR PROFILE</button>
-     <div>
+    </div>
 
    </div>
+
  </div>
 
-    <br clear='both' />
+
+ <br clear='both' />
  
  <div id="footer">
 

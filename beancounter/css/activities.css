@@ -1,0 +1,55 @@
+
+
+.activity{
+ padding:16px;
+ margin-left:50px;
+ margin-right:50px;
+ border-bottom-style: dotted ;
+ border-bottom-color: #5F6C72;
+ border-bottom-width: 1px;
+}
+
+.activity_text{
+ font-size:20px;
+ margin-bottom:10px;
+}
+
+.activity a{
+ color:white;
+}
+
+.activity a:link{
+  text-decoration:none;
+  color:#3198C4;
+}
+
+.activity a:visited{
+  text-decoration:none;
+  color:#3198C4;
+}
+
+
+.activity a:hover{
+}
+
+.rec{
+ float:left;
+ height:210px;
+ width:310px;
+ padding-top:20px;
+ padding-left:50px;
+}
+
+
+
+.activity_small{
+ padding:16px;
+ margin-right:50px;
+ border-bottom-style: dotted ;
+ border-bottom-color: #5F6C72;
+ border-bottom-width: 1px;
+}
+
+.tiny_pie{
+  width:20px;
+}

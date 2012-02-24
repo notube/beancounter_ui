@@ -1,0 +1,532 @@
+<html>
+<head>
+<link type="text/css" rel="stylesheet" href="css/main.css" />
+<link type="text/css" rel="stylesheet" href="css/analytics.css" />
+<script type="text/javascript" src="../lib/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="utils.js"></script>
+<script type="text/javascript" src="process_analytics_data.js"></script>
+<script type="text/javascript" id="activities"></script>
+<script type="text/javascript" id="profile"></script>
+<script language="javascript" type="text/javascript" src="lib/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="lib/flot/jquery.flot.pie.js"></script>
+<script language="javascript" type="text/javascript" src="lib/flot/jquery.flot.stack.js"></script>
+
+<script type="text/javascript">
+
+
+var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+var short_months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var user_id;
+//  user_id = data["object"]["id"];
+
+
+function go(data){
+
+  var creds = localStorage.getItem("creds");
+
+  if(creds){
+    var arr = creds.split("|");
+    username = arr[0];
+    $("#your_name").html(username);
+    init(username,callback);
+  }else{
+//no creds -
+    send_to_login_signup();
+  }
+
+}
+
+function send_to_login_signup(){
+  document.location="signup.html";
+}
+
+
+
+
+//up to three pie charts are allowed in this particular one
+var count_pies = 0;
+
+
+//callback returns multiple times
+
+function callback(result){
+
+  console.log("result");
+  console.log(result);
+
+
+  var html = [];
+  var html2 = [];
+  var html3 = [];
+  var html4 = [];
+  var c = 0;
+
+//first find type text or numbe
+
+  for(var r in result){
+    var ty = result[r]["type"];
+
+    console.log(ty);
+
+    var maintext = result[r]["text"];
+    var val = result[r]["value"];
+
+    //a short phrase or word
+
+    if(ty=="text"){
+       html.push("<div class='single'>");
+       html.push("   <div class='large'>"+val+"</div>");
+       html.push("   <div class='medium'>"+maintext+"</div>");
+       html.push("</div>");
+    }
+
+    // a number
+
+    if(ty=="number"){
+       html4.push("<div class='single'>");
+       html4.push("   <div class='large'>"+val+"</div>");
+       html4.push("   <div class='small'>"+maintext+"</div>");
+       html4.push("</div>");
+    }
+
+    //a text list
+
+    if(ty=="text_list" && val.length>0){
+       $("#text_list").show();
+       html3.push("   <div class='title small'>"+maintext+"</div>");
+       html3.push("   <div class='medium'>"+val.join(", ")+"</div>");
+    }
+
+
+    //up to three pie charts
+
+    if(ty=="pie"){
+       $("#pie"+count_pies).find(".title").html(maintext);
+       make_pie(val,"pie"+count_pies,"pie_content"+count_pies);
+       count_pies = count_pies+1;
+    }
+
+    //one only of activities, either a simple list (one thing per 
+    //datetime) or grouped by datetime
+
+    if(ty=="actvities_list" && val.length>0){
+     $("#schedule").find(".title").html(maintext);
+     $("#schedule").show();
+     for(var a in val){
+       var arr_item = val[a];
+        html2.push("<div class=\"activity_small\"><span class='activtiy_text'> <a target='_blank' href='"+arr_item["link"]+"'>"+arr_item["title"]+"</a> <br /><span class='teeny'>"+arr_item["texttime"]+"</span></div>");
+     }
+    }
+
+    if(ty=="activities_grouped"){
+     $("#schedule").find(".title").html(maintext);
+     $("#schedule").show();
+     var dow = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+     var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+     var num_days = 0;
+     var now = new Date();  
+//sort
+
+     var tuples = [];
+
+     for (var key in val) tuples.push([key, val[key]]);
+
+       tuples.sort(function(a, b) {
+         a = new Date(a[0]);
+         b = new Date(b[0]);
+
+         return a > b ? -1 : (a < b ? 1 : 0);
+      });
+
+
+      for (var i = 0; i < tuples.length; i++) {
+       var d = tuples[i][0];
+       var schedule = tuples[i][1];
+
+       var dat = new Date(d);
+       var diff_dat =  now - dat;
+       var the_day = dat.getDay();
+       var the_date = dat.getDate();
+       var the_month = dat.getMonth();
+       var schedule_text="";
+
+       for (var ss in schedule){
+         var arr_item = schedule[ss];
+         schedule_text = schedule_text+"<div><span class='activity_text'> <a target='_blank' href='"+arr_item["link"]+"'>"+arr_item["title"]+"</a></div>\n";
+
+       }
+       html2.push("<div class='lhs'>"+dow[the_day]+" "+the_date+" "+months[the_month]+"</div><div class='rhs'>"+schedule_text+"</div>");
+
+       html2.push("<br clear='both' />");
+     }
+
+    }
+
+    //graphs and charts
+
+    //an hour by hour count - make a bar chart
+
+    if(ty=="hourly_count"){
+      $("#to_d").find(".title").html(maintext);
+      make_time_of_day(val);
+    }
+
+    //top five this month compared with last
+
+    if(ty=="top_five"){
+      $("#top_five_container").find(".title").html(maintext);
+      make_top_five(val);
+    }
+
+    //top two over the last 6 months
+
+    if(ty=="top_two"){
+      $("#top_two_container").find(".title").html(maintext);
+      make_top_two(val);
+    }
+
+  }
+
+
+  $("#second_row").append(html4.join("\n"));
+
+  $("#top_row").append(html.join("\n"));
+
+  $(".single").show();
+
+  $("#schedule_table").append(html2.join("<br />\n"));
+
+  $("#text_list").html(html3.join("<br />\n"));
+
+}
+
+
+
+//pie charts
+
+function make_pie(data,el_container,el){
+  var colours = ["#ffbbcc","#ff8899","#cc0000","#ff99aa","#ffbbcc","#ff8899","#cc0000","#ff99aa"];
+  var to_plot=[];
+
+  //create data suiatble for flot for the pie chart
+  var c = 0;
+  for(var d in data){
+    var title = d;
+    var count = parseInt(data[d]);
+    to_plot.push({label:title,data: parseInt(count),color:colours[c]});
+    c = c+1;
+  }
+
+  if(to_plot.length>0){
+    $("#"+el_container).show();
+
+  //plot
+    $.plot($("#"+el), to_plot,
+        {
+                series: {
+                        pie: {
+                                show: true,
+                                stroke:{
+                                 color:"#ff8899"
+                                },
+                                label:{
+                                  formatter: function(label, series){
+                                    return '<div style="font-size:14px;color:#ddd;">'+label+'</div>';
+                                  }
+                                }
+    
+                        }
+                },
+                legend: {
+                        show: false
+                }
+   });
+  }
+}
+
+
+
+//bar chart showing time of day
+
+function make_time_of_day(time_of_day){
+
+   var colours = ["#ff8899","#007799","#cc0000","#ff99aa","#ffbbcc","#ff8899","#cc0000"];
+
+//there might be just one item or many - if several, make a stacked bar chart
+
+   var items_list = [];
+   var c = 0;
+
+//make a list of the keys for the legend
+   for (var item in time_of_day){
+     items_list.push(item);
+     c = c+1;
+   }
+
+
+   var data = [];
+
+   for(var r=0; r<24; r++){
+     for (var i in items_list){
+       var item_value = time_of_day[items_list[i]][r];
+       if(!item_value){//check for undefined
+         item_value = 0;
+       }
+       if(i==0){//first item
+         data.push({ data: [[r,0,item_value]], label: r, color: colours[i] });
+       }else{
+         var prev_item_value = time_of_day[items_list[i-1]][r];
+         if(!prev_item_value){//check for undefined
+          prev_item_value = 0;
+         }
+         if(item_value==0){
+           data.push({ data: [[r,0,0]], label: r, color: "#999" });
+         }else{
+           data.push({ data: [[r,prev_item_value,item_value]], label: r, color: colours[i] });
+         }
+       }
+     }
+   }
+
+
+   var tod = $("#tod");
+   
+  // plot it
+   var plot = $.plot(tod, data, {
+        bars: { show: true, barWidth: 0.8,fill: 1 },
+        stack:0,
+        legend: {show:false},
+        grid: {show:false},
+   });
+  //print the x axis 
+   o1 = plot.pointOffset({ x: 0, y: 0});
+   o2 = plot.pointOffset({ x: 1, y: 0});
+   o3 = plot.pointOffset({ x: 2, y: 0});
+   o4 = plot.pointOffset({ x: 3, y: 0});
+
+
+//home made legend
+   for (var i in items_list){
+     $("#my_legend").append("<div class='scale' > <span id='first_interest'>"+items_list[i]+"</span> <span style='width:100px;background:"+colours[i]+";'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>");  
+   } 
+
+
+//plot
+   var textcol="white";   
+   for(var r=0; r<24; r++){
+     o = plot.pointOffset({ x: r, y: 0});
+     tod.append('<div style="position:absolute;left:' + (o.left) + 'px;top:' + (o.top+40) + 'px;color:'+textcol+';">'+r+'</div>');
+   }
+
+//ensure visible
+   $("#to_d").show();
+   $("#tod").show();
+
+}
+
+
+
+//top five as a stacked bar chart
+
+function make_top_five(the_top_five){
+
+   var colours = ["#007799","#3198C4"];
+
+   var data = [
+      { data: the_top_five[0], color: colours[1]},
+      { data: the_top_five[1], color: colours[0] }
+   ];
+
+   var top_five = the_top_five[2];//names ofr things
+
+
+//remove grid, lose x-axis, keep y
+    var comparison_bar = $("#top_five");
+    var stack = 0, bars = true, lines = false, steps = false;
+
+    // plot it
+    var plot = $.plot(comparison_bar, data, {
+      grid: {show:false},
+      legend: {show:false},
+      series: {
+        stack: stack,
+        bars: { show: true, horizontal: true, barWidth: 0.5,fill: 1 },
+      }
+    });
+
+    var textcol="#999";
+    var width=-140;
+
+console.log("top_five");
+console.log(top_five);
+
+    for (var r in top_five_current){
+      var o = plot.pointOffset({ x: 0, y: r});
+      comparison_bar.append('<div style="width:120px;position:absolute;left:' + (o.left+width) + 'px;top:' + (o.top+30) + 'px;color:'+textcol+';">'+top_five[r]+'</div>');
+    }
+
+//ensure visible
+    $("#top_five_container").show();
+    $("#top_five").show();
+
+//home made legend
+    $("#top_five_legend").append("<div class='scale' > <span id='first_interest'>This Month</span> <span style='width:100px;background:"+colours[0]+";'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>");  
+    $("#top_five_legend").append("<div class='scale' > <span id='first_interest'>Last Month</span> <span style='width:100px;background:"+colours[1]+";'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>");  
+
+
+}
+
+
+//top two as a line graph
+
+
+function make_top_two(the_top_two){
+    var names = the_top_two[2];
+
+    var themonths = the_top_two[3];
+    var colours = ["#ee0000","#aa0011"];
+    var data = [
+      { data: the_top_two[0], color: colours[0] },
+      { data: the_top_two[1], color: colours[1] }
+    ];
+
+    var comparison_graph = $("#top_two");
+
+    var plot = $.plot($("#top_two"), data, {
+        grid: {show:false},
+        lines: {lineWidth: 5}
+    });
+
+    var textcol="#999";
+    var width=-140;
+
+    for (var r in themonths){
+      var o = plot.pointOffset({ x: r, y: 0});
+      comparison_graph.append('<div style="position:absolute;left:' + (o.left-20) + 'px;top:' + (o.top+80) + 'px;color:"+textcol+";">'+themonths[r]+'</div>');
+    }
+
+//ensure visible
+    $("#top_two_container").show();
+    $("#top_two").show();
+
+//home made legend
+    $("#top_two_legend").append("<div class='scale' > <span id='first_interest'>"+names[0]+"</span> <span style='width:100px;background:"+colours[0]+";'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>");  
+    $("#top_two_legend").append("<div class='scale' > <span id='first_interest'>"+names[1]+"</span> <span style='width:100px;background:"+colours[1]+";'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>");  
+
+}
+
+
+
+</script>
+
+
+<body onload="go()">
+
+
+ <div class='header'>
+
+  <div id="header">
+   <div class='title'>BEANCOUNTER</div>
+    <br clear='both' />
+   <div class='subtitle'>Personalise your TV recommendations based on what you do and say on
+the web</div>
+
+
+   <div class="settings nav" style="padding-top:5px;min-width:120px;" onclick="pulldown()">
+       <span id="your_name"></span>
+       <img src="images/settings.png" style="padding-top:2px;"/>
+       <div id="dropdown">
+         <div class="drop" id="profile_status"></div>
+         <div class="drop"><a onclick="go_to_settings()">Settings</a></div>
+         <div class="drop"><a onclick="logout()">Log out</a></div>
+       </div>
+   </div>
+
+
+
+   <div class="settings nav"><a href="recommendations.html">RECOMMENDATIONS</a></div>
+   <div class="settings nav selected"><a href="analytics.html">ANALYTICS</a></div>
+   <div class="settings nav"><a href="interests.html">INTERESTS</a></div>
+   <div class="settings nav"><a href="activities.html">ACTIVITIES</a></div>
+
+  </div>
+ </div>
+
+   <div class="analytics" id="analytics_content">
+
+     <div id="top_row"></div>
+     <div id="second_row"></div>
+
+     <br clear='both' />
+
+     <div class="timed_numeric_list_container" id="to_d">
+       <div class="title"></div>
+       <div id="my_legend"></div>
+       <div class="timed_numeric_list" id="tod"></div>
+     </div>
+
+
+     <div class="text_list" id="text_list">
+       <div class="title"></div>
+       <div class="" id="text_list_content"></div>
+     </div>
+
+
+     <br clear='both' />
+
+     <div id="schedule" class="timed_text_hash">
+       <div class="title"></div>
+       <div id="schedule_table"></div>
+     </div>
+
+
+     <div class="comparison_numeric" id="pie0">
+       <div class="title">0</div>
+       <div class="graph wide_graph" id="pie_content0"></div>
+     </div>
+
+     <div class="comparison_numeric" id="pie1">
+       <div class="title">1</div>
+       <div class="graph wide_graph" id="pie_content1"></div>
+     </div>
+
+     <div class="comparison_numeric" id="pie2">
+       <div class="title">2</div>
+       <div class="graph wide_graph" id="pie_content2"></div>
+     </div>
+
+
+
+     <div class="graph_container1" id="top_five_container">
+       <div class="title"></div>
+       <div id="top_five_legend"></div>
+       <div class="horizontal_bar" id="top_five"></div>
+     </div>
+
+     <div class="graph_container2" id="top_two_container">
+       <div class="title"></div>
+       <div id="top_two_legend"></div>
+       <div class="line" id="top_two"></div>
+     </div>
+
+     <br clear='both' />
+
+
+   </div>
+
+   <br clear='both' />
+
+ <div id="footer">
+
+   <div class="text">Powered by NoTube</div>
+   <div class="text">Privacy Policy</div>
+   <div class="text">Use NoTube's N-Screen to see suggested TV
+content based on your interests <a href="">Go to N-Screen</a> </div>
+
+ </div>
+
+
+</body>
+
+</html>

@@ -1,0 +1,358 @@
+<html>
+<head>
+<script type="text/javascript" src="../lib/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="utils.js"></script>
+<script id="newstuff" type="text/javascript"></script>
+
+<link type="text/css" rel="stylesheet" href="css/main.css" />
+<link type="text/css" rel="stylesheet" href="css/settings.css" />
+
+<script type ="text/javascript">
+var username;
+
+//check for saved u/p
+//and prompt for login / signup if not found
+//else send straight elsewhere (activities page?)
+
+function init(){
+
+  //@@should be mre secure
+  var creds = localStorage.getItem("creds");
+
+    if(creds){
+      var arr = creds.split("|");
+      username = arr[0];
+      $("#your_name").html(username); 
+      //send_to_interests();
+      select_data_sources();
+    }else{
+      $(".signin").show();
+      $(".settings").hide();
+      send_to_login_signup();
+    }
+
+}
+
+function send_to_login_signup(){
+///  $("#initial_signup").show();
+}
+
+
+function send_to_analytics(){
+  document.location="analytics.html";
+}
+function send_to_interests(){
+  document.location="interests.html";
+}
+
+function check_signin(){
+  var u = document.forms["signin"].username.value;
+  var p = document.forms["signin"].password.value
+//@@fixme this bit
+  if(!u){     
+    $("#u_msg").html("Please choose a username").show();    
+  }else{
+    $("#u_msg").empty().hide();
+  }
+  if(!p){     
+    $("#p_msg").html("Please choose a password").show();    
+  }else{
+    $("#p_msg").empty().hide();
+  }
+//end fixme
+  if(u && p){
+//query the server
+    username = u;
+    var url = bc_url+"user/authenticate/"+username+"?apikey="+app_key;
+    var data = "password="+p;
+    console.log("debugging - url and data");
+    console.log(url);
+    console.log(data);
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "POST",
+        data: data,
+        success: function(data){
+          //alert("ok 2 "+data["status"]+" "+data["message"]);
+          //save the data
+          localStorage.setItem("creds",u+"|"+p);//@@more secure??
+          $("#your_name").html(u);
+          select_data_sources();
+        }, 
+        error: function(data){
+          console.log("not ok 3 "+data["status"]+" "+data["message"]+" but proceeding anyway");
+          alert("failed");
+        }
+      });
+
+  }
+
+
+}
+
+function check_signup(){
+  var u = document.forms["signup"].username.value;
+  var p = document.forms["signup"].password.value
+  if(!u){     
+    $("#u_msg").html("Please choose a username").show();    
+  }else{
+    $("#u_msg").empty().hide();
+  }
+  if(!p){     
+    $("#p_msg").html("Please choose a password").show();    
+  }else{
+    $("#p_msg").empty().hide();
+  }
+
+  if(u && p){
+//query the server
+    var url = bc_url+"user/register?apikey="+app_key;
+    username = u;
+    var data = "name="+u+"&surname="+u+"&username="+u+"&password="+p;
+    console.log("debugging - url and data");
+    console.log(url);
+    console.log(data);
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "POST",
+        data: data,
+        success: function(data){
+          //alert("ok 2 "+data["status"]+" "+data["message"]);
+          //save the data
+          localStorage.setItem("creds",u+"|"+p);//@@more secure??
+          select_data_sources();
+        }, 
+        error: function(data){
+          console.log("not ok 2 "+data["status"]+" "+data["message"]+" but proceeding anyway");
+          localStorage.setItem("creds",u+"|"+p);//@@more secure??
+          select_data_sources();//@@tmp
+        }
+      });
+
+  }
+
+}
+
+function select_data_sources(){
+     $(".signin").hide();
+     $(".settings").show();
+//username needs checking for here
+   if(!username){
+
+     alert("no ysername");
+
+   }else{
+    var url = bc_url+"user/"+username+"?apikey="+app_key;
+//    $("#newstuff").attr("src",url);
+
+    $("#initial_signup").hide();
+    $("#data_sources").show();
+    $("#step1").removeClass("selected");
+    $("#step2").addClass("selected");
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+          write_data_sources(data);
+        },
+        error: function(data){
+          console.log("not ok 3 "+data["status"]+" "+data["message"]);
+          alert("failed");
+        }
+      });
+
+
+  }
+
+}
+
+///add services
+
+
+function send_to_service(service){
+
+// alert(service);
+
+
+ if(!username){
+  alert("no username");
+ }else{
+
+   if(service=="twitter"){
+
+     var url =bc_url+"user/oauth/token/twitter/"+username+"?redirect=http://"+return_part+"signup.html";
+
+     window.open(url);
+   }else if(service=="facebook"){
+     var url =bc_url+"user/oauth/token/facebook/"+username+"?redirect=http://"+return_part+"signup.html";
+     window.open(url);
+   }else if(service=="lastfm"){
+
+     var url ="http://www.last.fm/api/auth/?api_key=9f57b916d7ab90a7bf562b9e6f2385f0&cb="+bc_url+"user/auth/callback/lastfm/"+username+"/"+encodeURIComponent(encodeURIComponent(return_part+"signup.html"));
+console.log(url);
+
+     window.open(url);
+   }else{
+alert("not implemented yet "+service);
+   }
+
+ }
+
+
+}
+
+function write_data_sources(data){
+  console.log(data);
+
+  var all_services = ["facebook","twitter","lastfm","gomiso"];
+  var services = data["object"]["services"];
+
+
+  for (var s in all_services){
+     var ss = all_services[s];
+     var serv = $.inArray(ss, services)
+
+     if(serv!=-1){
+               
+       $("#"+ss).find(".grey").html("Added");
+       $("#"+ss).find(".grey").show();
+       $("#"+ss).find(".blue").html("Remove");
+       $("#"+ss).unbind('click');
+       $("#"+ss).click(function() {
+        var pid = $(this).attr("id");
+        alert("not implemented yet - service "+pid+" should be removed here");
+        return false;
+       })
+     }else{
+       $("#"+ss).unbind('click');
+       $("#"+ss).click(function() {
+        var pid = $(this).attr("id");
+//alert(ss);
+        send_to_service(pid);
+        return false;
+       })
+
+     }
+
+  }
+  
+
+}
+
+</script>
+
+
+</head>
+
+<body onload="init()">
+
+ <div class='header'>
+ <div id="header">
+   <div class='title'>BEANCOUNTER</div>
+   <div class="signin" style="display:none">
+     Already a member? Sign in: 
+     <form onsubmit='check_signin();return false;' id="signin">
+      <span class='normal'>Username:</span> <input  type="text" name="username"/>
+      <span class='normal'>Password:</span> <input  type="password" name="password"/>
+      <button name="next" value="next" class=''>SIGN IN</button>
+     </form>
+
+   </div>
+
+    <br clear='left' />
+   <div class='subtitle'>Personalise your TV recommendations based on what you do and say on the Web</div>
+
+   <div class="settings nav" style="padding-top:5px;min-width:120px;" onclick="pulldown()">
+       <span id="your_name"></span>
+       <img src="images/settings.png" style="padding-top:2px;"/>
+       <div id="dropdown">
+         <div class="drop"><a onclick="go_to_settings()">Settings</a></div>
+         <div class="drop"><a onclick="logout()">Log out</a></div>
+       </div>
+   </div>
+
+   <div class="settings" id="profile_status"></div>
+
+
+ </div>
+ </div>
+
+ <br clear='both' />
+
+
+ <div id="whitebox" class="whitebox">
+
+   <div class="options">
+     <div class="title">Sign Up</div>
+     <div id="step1" class="option selected">STEP 1: SIGN UP</div>
+     <div id="step2" class="option">STEP 2: ADD DATA SOURCES</div>
+     <div id="step3" class="option">STEP 3: VIEW YOUR PROFILE</div>
+   </div>
+   <div class="actions" id="actions">
+     <div id="initial_signup">
+<!-- style="display:none;">-->
+     <div class="option">You're only three steps away from getting personalised TV recommendations!</div>
+     <form onsubmit='check_signup();return false;' id="signup">
+      <span class='normal' style='padding-right:100px;'>Username:</span> <input class='input' type="text" name="username"/>
+      <span class='message' id='u_msg'></span>
+      <br />
+      <span class='normal'style='padding-right:105px;'>Password:</span> <input class='input' type="password" name="password"/>
+      <span class='message' id='p_msg'></span>
+
+      <div class="option">Our Privacy Policy:</div>
+
+      <ul>
+        <li><span class='normal it'>You own your data</span></li>
+        <li><span class='normal it'>We will not share your data with anyone else without your permission</span></li>
+
+        <li><span class='normal it'>You can delete your data at any point; you can take your data with you if you 
+wish, and it will be fully deleted from this service.</span></li>
+        <li><span class='normal it'>Your profile information is private by default but you can choose to make it public 
+if you wish.</span></li>
+
+      </ul>
+      <button name="next" value="next" class='submit'>NEXT</button>
+
+     </form>
+     </div>
+     <div id="data_sources" style="display:none;">
+       <div class='bold'>To get started you need to add one or more sources of activity data.</div>
+       <div class='normal'>You can remove or add sources at any time.</div>
+       <div style='padding:50px;' id="sources_list">
+         <div id='facebook'><img src='images/fb.png'><span class='grey'></span><span class='blue'>Add your Facebook account</span></div><br />
+         <div id='twitter'><img src='images/twitter.png'><span class='grey'></span><span class='blue'>Add your Twitter account</span></div><br />
+         <div id='lastfm'><img src='images/lfm.png'><span class='grey'></span><span class='blue'>Add your Last.fm account</span></div><br />
+<!--
+         <div id='gomiso'><img src='images/gomiso.png'><span class='grey'></span><span class='blue'>Add your GoMiso account</span></div><br />
+-->
+       <div>
+      <button name="next" value="next" class='submit' onclick='send_to_interests()'>SEE YOUR PROFILE</button>
+     <div>
+
+   </div>
+ </div>
+
+    <br clear='both' />
+ 
+ <div id="footer">
+
+   <div class="text">Powered by NoTube</div>
+   <div class="text">Privacy Policy</div>
+   <div class="text"> <a href="">Go to N-Screen</a> </div>
+   <div class="text">Use NoTube's N-Screen to see suggested TV
+content based on your interests</div>
+
+ </div>
+
+</body>
+
+</html>
+
+
+

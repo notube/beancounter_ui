@@ -82,8 +82,9 @@ function check_signin(){
           select_data_sources();
         }, 
         error: function(data){
-          console.log("not ok 3 "+data["status"]+" "+data["message"]+" but proceeding anyway");
-          alert("failed");
+          console.log(data);
+          console.log("not ok 3 "+data["status"]+" "+data["responseText"]);
+          $("#err1").html("Username or password is incorrect");
         }
       });
 
@@ -127,9 +128,9 @@ function check_signup(){
           select_data_sources();
         }, 
         error: function(data){
-          console.log("not ok 2 "+data["status"]+" "+data["message"]+" but proceeding anyway");
-          localStorage.setItem("creds",u+"|"+p);//@@more secure??
-          select_data_sources();//@@tmp
+          console.log(data);
+          console.log("not ok 3 "+data["status"]+" "+data["responseText"]);
+          $("#err2").html("Sorry, this username is already taken");
         }
       });
 
@@ -261,6 +262,8 @@ function write_data_sources(data){
       <span class='normal'>Username:</span> <input  type="text" name="username"/>
       <span class='normal'>Password:</span> <input  type="password" name="password"/>
       <button name="next" value="next" class=''>SIGN IN</button>
+      <br />
+      <span class='err' id='err1'></span>
      </form>
 
    </div>
@@ -304,6 +307,8 @@ function write_data_sources(data){
       <br />
       <span class='normal'style='padding-right:105px;'>Password:</span> <input class='input' type="password" name="password"/>
       <span class='message' id='p_msg'></span>
+      <br />
+      <span class='err' id='err2'></span>
 
       <div class="option">Our Privacy Policy:</div>
 

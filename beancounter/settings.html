@@ -122,19 +122,22 @@ alert("not implemented yet "+service);
 
 }
 
+
 function write_data_sources(data){
   console.log(data);
 
   var all_services = ["facebook","twitter","lastfm","gomiso"];
   var services = data["object"]["services"];
 
-console.log(services);
 
   for (var s in all_services){
      var ss = all_services[s];
-     var serv = $.inArray(ss, services)
+console.log("ss");
+console.log(ss);
+console.log(services[ss]);
 
-     if(serv!=-1){
+     if(services[ss]){
+
        $("#"+ss).find(".grey").html("Added");
        $("#"+ss).find(".grey").show();
        $("#"+ss).find(".blue").html("Remove");
@@ -148,6 +151,7 @@ console.log(services);
        $("#"+ss).unbind('click');
        $("#"+ss).click(function() {
         var pid = $(this).attr("id");
+//alert(ss);
         send_to_service(pid);
         return false;
        })
@@ -155,9 +159,10 @@ console.log(services);
      }
 
   }
-  
+
 
 }
+
 
 
 function logout(){

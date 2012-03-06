@@ -33,141 +33,143 @@ function send_to_login_signup(){
 
 function process_interests(){
 
-  var html = [];
+  if(interests){
+
+    var html = [];
 
 //sort the interests
 
-  var tuples = [];
+    var tuples = [];
 
-  for (var key in interests) tuples.push([key, interests[key]["weight"]]);
+    for (var key in interests) tuples.push([key, interests[key]["weight"]]);
 
-  tuples.sort(function(a, b) {
-    a = a[1];
-    b = b[1];
+    tuples.sort(function(a, b) {
+      a = a[1];
+      b = b[1];
 
-    return a > b ? -1 : (a < b ? 1 : 0);
-  });
+      return a > b ? -1 : (a < b ? 1 : 0);
+    });
 
 
 //normalise weights
-  var sizes = {};
-  var max=1;
-  var min=1;
-  var count = interests.length;
-  var median = 1;
-  var med_count = 0;/////med_count
-  var average = 1;
-  var total = 0;
+    var sizes = {};
+    var max=1;
+    var min=1;
+    var count = interests.length;
+    var median = 1;
+    var med_count = 0;/////med_count
+    var average = 1;
+    var total = 0;
 
-  for (var i = 0; i < tuples.length; i++) {
-    var key = tuples[i][0];
-    var value = tuples[i][1];
-    var weight = parseFloat(interests[key]["weight"]);
+    for (var i = 0; i < tuples.length; i++) {
+      var key = tuples[i][0];
+      var value = tuples[i][1];
+      var weight = parseFloat(interests[key]["weight"]);
 
-    total = total + weight;
-    if(weight>max){
-      max = weight;
-    }
-    if(weight<min){
-      min = weight;
-    }
-    if(sizes[weight]){
-      sizes[weight]=sizes[weight]+1;
-    }else{
-      sizes[weight]=1;
-    }
-  }
-
-  avg = total / count;
-  for(var s in sizes){
-    var weight = sizes[s];
-    if(med_count < weight){
-      med_count = weight;
-      median = s;
-    }
-  }
-
-//loop through again
-
-  for (var i = 0; i < tuples.length; i++) {
-    var key = tuples[i][0];
-    var value = tuples[i][1];
-
-    // do something with key and value
-    var n = key;
-
-    var acts = interests[n]["activities"];
-    var nn = interests[n]["reference"];
-
-    nn = nn.replace(/.*\//,"");
-    nn = nn.replace(/_/g," ");
-    var weight = interests[n]["weight"];
-
-    var w_class = "weight_low";
-    if(weight == median){//fugly
-      //console.log("median");
-      w_class = "weight_med";
-    }else{
-      if(weight > median){
-        w_class = "weight_high";
-        //console.log("high");
+      total = total + weight;
+      if(weight>max){
+        max = weight;
+      }
+      if(weight<min){
+        min = weight;
+      }
+      if(sizes[weight]){
+        sizes[weight]=sizes[weight]+1;
       }else{
-        w_class = "weight_low";
-        //console.log("low");
+        sizes[weight]=1;
       }
     }
 
-
-
-    var is_new = interests[n]["new"];
-    var is_private = interests[n]["private"];
-    var n_id = nn.replace(/ /g,"_");
-    n_id = n_id.replace(/\(/g,"_");
-    n_id = n_id.replace(/\)/g,"_");
-    n_id = n_id.replace(/\./g,"");
-    n_id = n_id.replace(/\,/g,"");
-    html.push("<div onclick='show_lightbox(\""+n_id+"\")' class='interest "+w_class+"'>"+nn);
-
-    if(is_new){
-      html.push("<span class='new'>NEW</span>");
+    avg = total / count;
+    for(var s in sizes){
+      var weight = sizes[s];
+      if(med_count < weight){
+        med_count = weight;
+        median = s;
+      }
     }
-    if(is_private){
-      html.push("<img src='images/lock_small.png'/>");
+
+//loop through again
+
+    for (var i = 0; i < tuples.length; i++) {
+      var key = tuples[i][0];
+      var value = tuples[i][1];
+
+      // do something with key and value
+      var n = key;
+
+      var acts = interests[n]["activities"];
+      var nn = interests[n]["reference"];
+
+      nn = nn.replace(/.*\//,"");
+      nn = nn.replace(/_/g," ");
+      var weight = interests[n]["weight"];
+
+      var w_class = "weight_low";
+      if(weight == median){//fugly
+        //console.log("median");
+        w_class = "weight_med";
+      }else{
+        if(weight > median){
+          w_class = "weight_high";
+          //console.log("high");
+        }else{
+          w_class = "weight_low";
+          //console.log("low");
+        }
+      }
+
+
+
+      var is_new = interests[n]["new"];
+      var is_private = interests[n]["private"];
+      var n_id = nn.replace(/ /g,"_");
+      n_id = n_id.replace(/\(/g,"_");
+      n_id = n_id.replace(/\)/g,"_");
+      n_id = n_id.replace(/\./g,"");
+      n_id = n_id.replace(/\,/g,"");
+      html.push("<div onclick='show_lightbox(\""+n_id+"\")' class='interest "+w_class+"'>"+nn);
+
+      if(is_new){
+        html.push("<span class='new'>NEW</span>");
+      }
+      if(is_private){
+        html.push("<img src='images/lock_small.png'/>");
+      }
+      html.push("</div>");
+      html.push("<div class='lightbox' id='"+n_id+"'>");
+      html.push("<div class=\"close\" onclick=\"close_lightbox()\"><img src=\"images/close_yellow.png\" /></div><div class='lb_inner'>");
+      html.push("<span class='title'>"+nn+"</span>");
+      if(is_new){
+        html.push("<span class='new'>NEW</span>");
+      }
+      if(is_private){
+        html.push("<img src='images/lock_small.png'/>");
+      }
+      html.push("<br />");
+      for(var a in acts){
+         var act = acts[a];
+         var date = act["context"]["date"];
+         var verb = act["verb"];
+         var text = act["object"]["text"];
+         var hashtag = act["object"]["hashTags"][0];
+         var service = act["context"]["service"];
+         var d = act["context"]["date"];
+         var url = act["object"]["url"];
+         html.push("<div class=\"activity\">You "+verb+"ed");
+         html.push(" about <a href=\""+url+"\">"+nn+"</a>");
+
+         html.push(" on <a href=\""+url+"\">"+service+"</a>:<br />'"+text+"'<br /><span class='teeny'>"+process_date(date)+"</span>");
+
+         html.push("</div>");
+      }
+      html.push("</div>");
+      html.push("</div>");
+
     }
-    html.push("</div>");
-    html.push("<div class='lightbox' id='"+n_id+"'>");
-    html.push("<div class=\"close\" onclick=\"close_lightbox()\"><img src=\"images/close_yellow.png\" /></div><div class='lb_inner'>");
-    html.push("<span class='title'>"+nn+"</span>");
-    if(is_new){
-      html.push("<span class='new'>NEW</span>");
-    }
-    if(is_private){
-      html.push("<img src='images/lock_small.png'/>");
-    }
-    html.push("<br />");
-    for(var a in acts){
-       var act = acts[a];
-       var date = act["context"]["date"];
-       var verb = act["verb"];
-       var text = act["object"]["text"];
-       var hashtag = act["object"]["hashTags"][0];
-       var service = act["context"]["service"];
-       var d = act["context"]["date"];
-       var url = act["object"]["url"];
-       html.push("<div class=\"activity\">You "+verb+"ed");
-       html.push(" about <a href=\""+url+"\">"+nn+"</a>");
 
-       html.push(" on <a href=\""+url+"\">"+service+"</a>:<br />'"+text+"'<br /><span class='teeny'>"+process_date(date)+"</span>");
-
-       html.push("</div>");
-    }
-    html.push("</div>");
-    html.push("</div>");
-
-  }
-
-  $("#interests").html(html.join("\n"));
-
+    $("#interests").html(html.join("\n"));
+  }//end if interest
 }
 
 
@@ -247,7 +249,7 @@ below. <a href="">Our Privacy Policy</a>: you are always in control of your data
  </div>
 
  <br clear='both' />
- <div id="footer">
+ <div id="footer_nostyle">
 
    <div class="text">Powered by NoTube</div>
    <div class="text">Privacy Policy</div>

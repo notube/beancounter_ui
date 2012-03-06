@@ -100,18 +100,14 @@ function send_to_service(service){
  }else{
 
    if(service=="twitter"){
-
      var url =bc_url+"user/oauth/token/twitter/"+username+"?redirect=http://"+return_part+"settings.html";
-
-     window.open(url);
+     document.location=url;
    }else if(service=="facebook"){
      var url =bc_url+"user/oauth/token/facebook/"+username+"?redirect=http://"+return_part+"settings.html";
-     window.open(url);
+     document.location=url;
    }else if(service=="lastfm"){
-
      var url ="http://www.last.fm/api/auth/?api_key=9f57b916d7ab90a7bf562b9e6f2385f0&cb="+bc_url+"user/auth/callback/lastfm/"+username+"/"+encodeURIComponent(encodeURIComponent(return_part+"settings.html"));
-console.log(url);
-     window.open(url);
+     document.location=url;
 
    }else{
 alert("not implemented yet "+service);
@@ -144,7 +140,8 @@ console.log(services[ss]);
        $("#"+ss).unbind('click');
        $("#"+ss).click(function() {
         var pid = $(this).attr("id");
-        alert("not implemented yet - service "+pid+" should be removed here");
+        //alert("not implemented yet - service "+pid+" should be removed here");
+        remove_service(pid);
         return false;
        })
      }else{
@@ -163,12 +160,148 @@ console.log(services[ss]);
 
 }
 
+function remove_service(service_id){
+
+    var url = bc_url+"user/source/"+username+"/"+service_id+"?apikey="+app_key;
+    console.log(url);
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "DELETE",
+        success: function(data){
+           service_removal_result(data,service_id);
+        },
+        error: function(data){
+          console.log("not ok 3 "+data["status"]+" "+data["message"]);
+          alert("failed");
+        }
+      });
+
+}
+
+function service_removal_result(data,service_id){
+  console.log(data);
+  console.log(service_id);
+  if(data["status"]=="OK"){
+       $("#"+service_id).find(".grey").html("Removed");
+       $("#"+service_id).find(".grey").show();
+       $("#"+service_id).find(".blue").html("Add again");
+       $("#"+service_id).unbind('click');
+       $("#"+service_id).click(function() {
+        var pid = $(this).attr("id");
+        send_to_service(pid);
+        return false;
+       });
+  }
+}
+
+function delete_user(username){
+    var url = bc_url+"user/"+username+"?apikey="+app_key;
+    console.log(url);
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "DELETE",
+        success: function(data){
+alert("ok");
+//           user_removal_result(data,username);
+        },
+        error: function(data){
+          console.log("not ok 5 "+data["status"]+" "+data["message"]);
+          console.log(data);
+          alert("failed");
+        }
+      });
+
+}
+
+
+function user_removal_result(data,username){
+  console.log(data);
+  console.log(username);
+}
 
 
 function logout(){
   localStorage.removeItem("creds");
   document.location="signup.html";
 }
+
+function show_step1(){
+  $("#step1").addClass("selected");
+  $("#step2").removeClass("selected");
+  $("#step3").removeClass("selected");
+  $("#data_sources").show();
+  $("#privacy").hide();
+  $("#export").hide();
+
+}
+function show_step2(){
+  $("#step1").removeClass("selected");
+  $("#step2").addClass("selected");
+  $("#step3").removeClass("selected");
+  $("#data_sources").hide();
+  $("#privacy").show();
+  $("#export").hide();
+
+}
+function show_step3(){
+  $("#step1").removeClass("selected");
+  $("#step2").removeClass("selected");
+  $("#step3").addClass("selected");
+  $("#data_sources").hide();
+  $("#privacy").hide();
+  $("#export").show();
+}
+
+
+
+function export_data(){
+  alert("export here");
+}
+
+function delete_data(){
+  show_lightbox();
+}
+
+
+function really_delete(){
+
+    var url = bc_url+"user/"+username+"?apikey="+app_key;
+    console.log(url);
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "DELETE",
+        success: function(data){
+          console.log(data);
+          alert("deleted");
+        },
+        error: function(data){
+          console.log("not ok 6 "+data["status"]+" "+data["message"]);
+          console.log(data);
+          alert("failed");
+        }
+      });
+
+}
+
+
+
+//show the lightbox popup
+
+function show_lightbox(){
+console.log("showing lightbox");
+  $("#lightbox").show();
+}
+
+function close_lightbox(){
+  $("#lightbox").hide();
+}
+
 
 </script>
 
@@ -215,9 +348,9 @@ function logout(){
  <div id="whitebox" class="whitebox">
    <div class="options">
      <div class="title">Your settings</div>
-     <div id="step1" class="option selected">DATA SOURCES</div>
-     <div id="step2" class="option">PRIVACY AND SHARING</div>
-     <div id="step3" class="option">EXPORT / DELETE</div>
+     <div id="step1" class="option selected" onclick="show_step1()">DATA SOURCES</div>
+     <div id="step2" class="option" onclick="show_step2()">PRIVACY AND SHARING</div>
+     <div id="step3" class="option" onclick="show_step3()">EXPORT / DELETE</div>
    </div>
    <div class="actions" id="actions">
      <div id="data_sources">
@@ -232,8 +365,35 @@ function logout(){
        </div>
       <button name="next" value="next" class='submit' onclick='send_to_interests()'>SEE YOUR PROFILE</button>
      </div>
+     <div id="privacy" style="display:none">
+       Privacy and sharing - @@todo
+     </div>
+     <div id="export" style="display:none">
+
+     <div id="data_sources">
+       <div class='normal'>You can export your data or delete your account here</div>
+       <div style='padding:50px;' id="sources_list">
+
+         <div id='exp' onclick='export_data()'><span class='grey'></span><span class='blue'>Export your data</span></div><br />
+
+         <div id='del' onclick='delete_data()'><span class='grey'></span><span class='blue'>Delete your account</span></div><br />
+
+       </div>
+     </div>
+
+
 
    </div>
+ </div>
+
+ <div class="lightbox" id="lightbox">
+  <div class="lb_inner">
+  <span class='title'>
+    Are you absolutely sure you want to delete everything?
+  </span>
+      <button name="del" value="next" onclick="really_delete();return false;" class=''>DELETE</button>
+      <button name="dont" value="next" onclick="close_lightbox()" class=''>DONT DELETE</button>
+  </div>
  </div>
 
     <br clear='both' />
@@ -247,6 +407,7 @@ function logout(){
 content based on your interests</div>
 
  </div>
+
 
 </body>
 

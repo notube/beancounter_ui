@@ -190,16 +190,15 @@ function send_to_service(service){
 
      var url =bc_url+"user/oauth/token/twitter/"+username+"?redirect=http://"+return_part+"signup.html";
 console.log(url);
-     window.open(url);
+     document.location=url;
    }else if(service=="facebook"){
      var url =bc_url+"user/oauth/token/facebook/"+username+"?redirect=http://"+return_part+"signup.html";
-     window.open(url);
+     document.location=url;
    }else if(service=="lastfm"){
 
      var url ="http://www.last.fm/api/auth/?api_key=9f57b916d7ab90a7bf562b9e6f2385f0&cb="+bc_url+"user/auth/callback/lastfm/"+username+"/"+encodeURIComponent(encodeURIComponent(return_part+"signup.html"));
 console.log(url);
-
-     window.open(url);
+     document.location=url;
    }else{
 alert("not implemented yet "+service);
    }

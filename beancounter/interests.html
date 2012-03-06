@@ -173,11 +173,13 @@ function process_interests(){
 }
 
 
+
 //show the lightbox popup
 
 function show_lightbox(name){
 console.log("showing lightbox");
   $("#"+name).show();
+  $("#bg").show();
 }
 
 function close_yellow(){
@@ -186,6 +188,7 @@ function close_yellow(){
 
 function close_lightbox(){
   $(".lightbox").hide();
+  $("#bg").hide();
 }
 
 
@@ -258,6 +261,7 @@ content based on your interests <a href="">Go to N-Screen</a> </div>
 
  </div>
 
+ <div id='bg' style='display:none;' onclick='javascript:close_lightbox()'></div>
 
 </body>
 </html>

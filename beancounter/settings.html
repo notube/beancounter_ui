@@ -296,10 +296,13 @@ function really_delete(){
 function show_lightbox(){
 console.log("showing lightbox");
   $("#lightbox").show();
+  $("#bg").show();
+
 }
 
 function close_lightbox(){
   $("#lightbox").hide();
+  $("#bg").hide();
 }
 
 
@@ -407,6 +410,8 @@ function close_lightbox(){
 content based on your interests</div>
 
  </div>
+
+ <div id='bg' style='display:none;' onclick='javascript:close_lightbox()'></div>
 
 
 </body>

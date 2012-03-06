@@ -160,7 +160,7 @@ function select_data_sources(){
         dataType: "json",
         type: "GET",
         success: function(data){
-          write_data_sources(data);
+          write_data_sources(data,username);
         },
         error: function(data){
           console.log("not ok 3 "+data["status"]+" "+data["message"]);
@@ -209,8 +209,10 @@ alert("not implemented yet "+service);
 
 }
 
-function write_data_sources(data){
+function write_data_sources(data,un){
   console.log(data);
+
+  $("#your_name").html(un); 
 
   var all_services = ["facebook","twitter","lastfm","gomiso"];
   var services = data["object"]["services"];

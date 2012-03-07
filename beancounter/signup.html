@@ -11,6 +11,8 @@
 
 function init(){
 
+  $("#step1").addClass("selected");
+
   //@@should be mre secure
   var creds = localStorage.getItem("creds");
 
@@ -63,6 +65,9 @@ function check_signin(){
           //save the data
           localStorage.setItem("creds",u+"|"+p);//@@more secure??
           $("#your_name").html(u);
+          $("#step1").click(show_step1).removeClass("selected");
+          $("#step2").click(show_step2).addClass("selected");
+          $("#step3").click(show_step3);
           select_data_sources();
         }, 
         error: function(data){
@@ -109,8 +114,8 @@ function check_signup(){
           //alert("ok 2 "+data["status"]+" "+data["message"]);
           //save the data
           localStorage.setItem("creds",u+"|"+p);//@@more secure??
-          $("#step1").click(show_step1).addClass("selected");
-          $("#step2").click(show_step2);
+          $("#step1").click(show_step1).removeClass("selected");
+          $("#step2").click(show_step2).addClass("selected");
           $("#step3").click(show_step3);
 
           select_data_sources();
@@ -126,6 +131,42 @@ function check_signup(){
 
 }
 
+
+function select_data_sources(){
+//username needs checking for here
+   $(".signin").hide();
+   $(".settings").show();
+
+   if(!username){
+
+     alert("no username");
+
+   }else{
+    var url = bc_url+"user/"+username+"?apikey="+app_key;
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+          $("#your_name").html(username);
+          $("#step1").removeClass("selected");
+          $("#step2").addClass("selected");
+          write_data_sources(data);
+        },
+        error: function(data){
+          console.log("not ok 3 "+data["status"]+" "+data["message"]);
+          alert("failed");
+        }
+      });
+
+
+    $("#initial_signup").hide();//??
+    $("#data_sources").show();//??
+
+  }
+
+}
 
 </script>
 
@@ -174,9 +215,9 @@ function check_signup(){
  <div id="whitebox" class="whitebox">
    <div class="options">
      <div class="title">Sign Up</div>
-     <div id="step1" class="option">DATA SOURCES</div>
-     <div id="step2" class="option">PRIVACY AND SHARING</div>
-     <div id="step3" class="option">EXPORT / DELETE</div>
+     <div id="step1" class="option">STEP 1: SIGN UP</div>
+     <div id="step2" class="option">STEP 2: ADD DATA SOURCES</div>
+     <div id="step3" class="option">STEP 3: VIEW YOUR PROFILE</div>
 
    </div>
 
@@ -215,11 +256,14 @@ if you wish.</span></li>
      </div>
      <div id="data_sources" style="display:none;">
        <div class='bold'>To get started you need to add one or more sources of activity data.</div>
-       <div class='normal'>You can remove or add sources at any time.</div>
+       <div class='normal'>You can remove or add sources at any time in your <a href="settings.html">settings</a>.</div>
        <div style='padding:50px;' id="sources_list">
-         <div id='facebook'><img src='images/fb.png'><span class='grey'></span><span class='blue'>Add your Facebook account</span></div><br />
-         <div id='twitter'><img src='images/twitter.png'><span class='grey'></span><span class='blue'>Add your Twitter account</span></div><br />
-         <div id='lastfm'><img src='images/lfm.png'><span class='grey'></span><span class='blue'>Add your Last.fm account</span></div><br />
+         <div class='data_source' id='facebook'><img src='images/fb.png' width='30px'><span class='grey'></span><span class='blue'>Add your Facebook account</span></div>
+          <br />
+         <div class='data_source' id='twitter'><img src='images/twitter.png' width='30px'><span class='grey'></span><span class='blue'>Add your Twitter account</span></div>
+          <br />
+         <div class='data_source' id='lastfm'><img src='images/lfm.png' width='30px'><span class='grey'></span><span class='blue'>Add your Last.fm account</span></div>
+          <br />
        </div>
       <button name="next" value="next" class='submit' onclick='send_to_interests()'>SEE YOUR PROFILE</button>
     </div>

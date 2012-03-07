@@ -4,8 +4,6 @@
 <link type="text/css" rel="stylesheet" href="css/activities.css" />
   <script type="text/javascript" src="../lib/jquery-1.7.1.min.js"></script>
   <script type="text/javascript" src="utils.js"></script>
-  <script type="text/javascript" id="activities"></script>
-  <script type="text/javascript" id="activities" src="create_activities.js"></script>
   <script type="text/javascript">
 
 
@@ -24,7 +22,7 @@ function init(){
     var arr = creds.split("|");
     username = arr[0];
     $("#your_name").html(username);
-    get_activities(username,"");
+    get_profile(username);
   }else{
 //no creds -
     send_to_login_signup();
@@ -37,8 +35,48 @@ function send_to_login_signup(){
 }
 
 
-function render_activities(data){
-console.log(data);
+
+function get_profile(username){
+  var url = bc_url+"user/profile/"+username+"?apikey="+app_key;
+      console.log(url);
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+          get_activities(data,username);
+        },
+        error: function(data){
+          console.log("not ok 3 "+data["status"]+" "+data["message"]);
+          alert("failed");
+        }
+      });
+
+
+}
+
+
+function get_activities(profile,username){
+  var url = bc_url+"user/activities/"+username+"?apikey="+app_key;
+      console.log(url);
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+          render_activities(profile,data);
+        },
+        error: function(data){
+          console.log("not ok 5 "+data["status"]+" "+data["message"]);
+          alert("failed");
+        }
+      });
+}
+
+
+
+function render_activities(data,activities2){
+
   var html = [];
   user_id = data["object"]["id"];
 
@@ -52,12 +90,10 @@ console.log(data);
 //these activities should be ordered@@ not workie...
 
   var interests = data["object"]["interests"];
-console.log("interests");
-console.log(interests);
 
 
   var activities = {};
-  var interests_activities = {};
+  var activities_interests = {};
 
 //loop throug so we can sort them properly
   for(var i in interests){
@@ -68,61 +104,45 @@ console.log(interests);
     var acts = ins["activities"];
     for (var a in acts){
        var act = acts[a];
-       var act2 = activities[act["object"]["url"]];
-//munging so we can sort them
-       if(act2){
-
-          if(act2["interests"]){
-            act2["interests"].push(term);
-          }else{
-console.log("xx");
-          }
+       var act2 = act["object"]["url"];
+       var a_t = activities_interests[act2];
+       if(a_t){
+         a_t.push(term);
        }else{
-          var arr2 = [];
-          arr2.push(term);
-
-          act["interests"]=arr2;
-          activities[act["object"]["url"]]=act;
+         a_t = [];
+         a_t.push(term);
+         activities_interests[act2] = a_t;
        }
     }
+
   }
 
 
-console.log("activities");
-console.log(activities);
+//ok reverse the activities2 array and loop through it
 
-  var tuples = [];
+  var the_acts = activities2["object"];
+  the_acts.reverse();
+  for(var a in the_acts){
+    var act = the_acts[a];
+    var url = act["object"]["url"];
+    var interests = activities_interests[url];
+    
+    var date = act["context"]["date"];
+    var verb = act["verb"];
+    var hashtag = act["object"]["hashTags"][0];
+    var service = act["context"]["service"];
+    var d = act["context"]["date"];
+    var text = act["object"]["text"];
 
-  for (var a in activities) tuples.push([a, activities[a]["context"]["date"]]);
+    html.push("<div class=\"activity\">You "+verb+"ed");
+    if(interests && interests.length>0){
+         html.push(" about <a href=\""+url+"\">"+interests.join(", ")+"</a>");
+    }
+    html.push(" on <a href=\""+url+"\">"+service+"</a><br />'"+text+"'<br /><span class='teeny'>"+process_date(date)+"</span></div>");
+ 
+  }  
 
-  tuples.sort(function(a, b) {
-         a = new Date(a[1]);
-         b = new Date(b[1]);
-
-         return a > b ? -1 : (a < b ? 1 : 0);
-  });
-
-
-  for (var i = 0; i < tuples.length; i++) {
-
-       var act = activities[tuples[i][0]];
-
-       var date = act["context"]["date"];
-       var interests =  act["interests"];
-       var verb = act["verb"];
-       var hashtag = act["object"]["hashTags"][0];
-       var service = act["context"]["service"];
-       var d = act["context"]["date"];
-       var url = act["object"]["url"];
-       var text = act["object"]["text"];
-       html.push("<div class=\"activity\">You "+verb+"ed");
-       if(interests.length>0){
-            html.push(" about <a href=\""+url+"\">"+interests.join(", ")+"</a>");
-       }
-       html.push(" on <a href=\""+url+"\">"+service+"</a><br />'"+text+"'<br /><span class='teeny'>"+process_date(date)+"</span></div>");
-  }
-
-  $("#foo").html(html.join("\n"));
+  $("#activities").html(html.join("\n"));
 
 }
 
@@ -169,7 +189,7 @@ the web</div>
 
  <br clear='both' />
 
-<div id="foo"></div>
+ <div id="activities"></div>
 
  <br clear='both' />
 

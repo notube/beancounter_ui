@@ -5,7 +5,7 @@ var c_callback = null;
 function get_activities(username,callback){
   c_callback = callback;
   var url = bc_url+"user/profile/"+username+"?apikey="+app_key;
-//  $("#activities").attr("src",url);
+console.log(url);
       $.ajax({
         url:url,
         dataType: "json",

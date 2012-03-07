@@ -5,7 +5,7 @@ var c_callback = null;
 
 function get_recommendations(username,callback){
   c_callback = callback;
-  var url = n_screen_api_root+"profile?url="+bc_url+"user/profile/"+username+"?apikey=ecb1e9fc90d14b63a3fe70497cbf1d69";
+  var url = n_screen_api_root+"profile?url="+bc_url+"user/profile/"+username+"?apikey="+app_key;
 ////
 console.log(url);
     $.ajax({

@@ -12,48 +12,6 @@ function send_to_interests(){
   document.location="interests.html";
 }
 
-function select_data_sources(){
-//username needs checking for here
-   $(".signin").hide();
-   $(".settings").show();
-
-   if(!username){
-
-     alert("no username");
-
-   }else{
-    var url = bc_url+"user/"+username+"?apikey="+app_key;
-
-/*
-does this always make sense? appears i n signup not seetings
-    $("#initial_signup").hide();
-    $("#data_sources").show();
-    $("#step1").removeClass("selected");
-    $("#step2").addClass("selected");
-
-*/
-
-      $.ajax({
-        url:url,
-        dataType: "json",
-        type: "GET",
-        success: function(data){
-          $("#your_name").html(username);
-          write_data_sources(data);
-        },
-        error: function(data){
-          console.log("not ok 3 "+data["status"]+" "+data["message"]);
-          alert("failed");
-        }
-      });
-
-
-    $("#initial_signup").hide();//??
-    $("#data_sources").show();//??
-
-  }
-
-}
 
 ///add services
 
@@ -124,8 +82,14 @@ console.log(services[ss]);
 
 }
 
-function remove_service(service_id){
 
+
+
+
+
+function really_remove_service(service_id){
+
+    close_lightbox()
     var url = bc_url+"user/source/"+username+"/"+service_id+"?apikey="+app_key;
     console.log(url);
 
@@ -216,9 +180,27 @@ function really_delete(){
 
 
 
+function remove_service(serv){
+  show_delservicebox(serv);
+}
+
 
 
 //show the lightbox popup
+
+function show_delservicebox(serv){
+console.log("showing del service box "+serv);
+  ////here
+  //todel deltext
+  $("#todel").click(function(){
+    really_remove_service(serv);
+  });
+  $("#deltext").html("Are you sure you really want to delete "+serv);
+  $("#delservice").show();
+  $("#bg").show();
+
+}
+
 
 function show_lightbox(){
 console.log("showing lightbox");
@@ -228,7 +210,7 @@ console.log("showing lightbox");
 }
 
 function close_lightbox(){
-  $("#lightbox").hide();
+  $(".lightbox").hide();
   $("#bg").hide();
 }
 

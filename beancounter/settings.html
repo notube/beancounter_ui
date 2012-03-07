@@ -281,13 +281,31 @@ function really_delete(){
           alert("deleted");
         },
         error: function(data){
-          console.log("not ok 6 "+data["status"]+" "+data["message"]);
-          console.log(data);
-          alert("failed");
+
+          console.log("problems with browsers say its failed but in most cases it hasn't checking...");
+
+          if(data["responseText"]["status"]=="OK"){
+            console.log("logging out");
+            logout();
+          }else{
+            console.log("NOT OK");
+            console.log(data["responseText"]);
+            console.log(Object.prototype.toString.call(data["responseText"]));
+//yuck. seems to be sending back a String
+//hack - see if we can fix later
+            var res = data["responseText"];
+            if(res.match("OK") && (!res.match("NOK"))){
+               logout();
+            } 
+
+          }
+
         }
       });
 
 }
+
+
 
 
 

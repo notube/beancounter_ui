@@ -195,7 +195,7 @@ console.log("showing del service box "+serv);
   $("#todel").click(function(){
     really_remove_service(serv);
   });
-  $("#deltext").html("Are you sure you really want to delete "+serv);
+  $("#deltext").html("Are you sure you really want to delete "+serv+" from your account?");
   $("#delservice").show();
   $("#bg").show();
 

@@ -120,9 +120,19 @@ function render_activities(data,activities2){
 
 
 //ok reverse the activities2 array and loop through it
+//reversing doesn't help if 2 sources
+//need to sort by date
 
   var the_acts = activities2["object"];
-  the_acts.reverse();
+
+  the_acts.sort(function(a, b) {
+      a = a["context"]["date"];
+      b = b["context"]["date"];
+
+      return a > b ? -1 : (a < b ? 1 : 0);
+  });
+
+
   for(var a in the_acts){
     var act = the_acts[a];
     var url = act["object"]["url"];
@@ -130,16 +140,27 @@ function render_activities(data,activities2){
     
     var date = act["context"]["date"];
     var verb = act["verb"];
-    var hashtag = act["object"]["hashTags"][0];
+//    var hashtag = act["object"]["hashTags"][0];
     var service = act["context"]["service"];
     var d = act["context"]["date"];
     var text = act["object"]["text"];
 
     html.push("<div class=\"activity\">You "+verb+"ed");
     if(interests && interests.length>0){
-         html.push(" about <a href=\""+url+"\">"+interests.join(", ")+"</a>");
+         if(verb=="TWEET"){
+           html.push(" about");
+         }
+         if(verb=="LISTEN"){
+           html.push(" to");
+         }
+         html.push(" <a href=\""+url+"\">"+interests.join(", ")+"</a>");
     }
-    html.push(" on <a href=\""+url+"\">"+service+"</a><br />'"+text+"'<br /><span class='teeny'>"+process_date(date)+"</span></div>");
+    html.push(" on <a href=\""+url+"\">"+service+"</a><br />");
+
+    if(text && text!=""){
+      html.push("'"+text+"'<br />");
+    }
+    html.push("<span class='teeny'>"+process_date(date)+"</span></div>");
  
   }  
 

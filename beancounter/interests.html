@@ -153,19 +153,34 @@ function process_interests(){
          var date = act["context"]["date"];
          var verb = act["verb"];
          var text = act["object"]["text"];
-         var hashtag = act["object"]["hashTags"][0];
+//         var hashtag = act["object"]["hashTags"][0];
          var service = act["context"]["service"];
          var d = act["context"]["date"];
          var url = act["object"]["url"];
+
+
          html.push("<div class=\"activity\">You "+verb+"ed");
-         html.push(" about <a href=\""+url+"\">"+nn+"</a>");
+         if(interests && interests.length>0){
+           if(verb=="TWEET"){
+             html.push(" about");
+           }
+           if(verb=="LISTEN"){
+             html.push(" to");
+           }
 
-         html.push(" on <a href=\""+url+"\">"+service+"</a>:<br />'"+text+"'<br /><span class='teeny'>"+process_date(date)+"</span>");
+           html.push(" <a href=\""+url+"\">"+nn+"</a>");
+         }
+         html.push(" on <a href=\""+url+"\">"+service+"</a><br />");
 
-         html.push("</div>");
+         if(text && text!=""){
+           html.push("'"+text+"'<br />");
+         }
+         html.push("<span class='teeny'>"+process_date(date)+"</span></div>");
+
       }
       html.push("</div>");
       html.push("</div>");
+
 
     }
 

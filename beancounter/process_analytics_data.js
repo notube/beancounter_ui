@@ -184,7 +184,7 @@ console.log(data);
 //     result.push({"text":"Top 5 interests","type":"top_five","value":[d1,null,top_five]});
 //alternative - pie
 
-     result.push({"text":"Top 5 interests","type":"pie","value":tf});
+     result.push({"text":"Top "+top_five_current.length+" interests","type":"pie","value":tf});
 
 
 //could also keep track of genres per activity here@@

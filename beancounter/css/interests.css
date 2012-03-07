@@ -31,25 +31,6 @@
  font-size:25px;
 }
 
-.bluebox{
- float:left;
- color:white;
- background:#3198C4;
- width:93%;
- height:10%;
- margin-left:30px;
- margin-right:30px;
- margin-top:20px;
- -moz-border-radius: 3px;
- border-radius: 3px;
-}
-
-
-.bluebox .title{
- padding:20px;
- font-size:16px;
-}
-
 .interests{
  float:left;
  width:93%;

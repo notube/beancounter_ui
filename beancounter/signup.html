@@ -2,17 +2,12 @@
 <head>
 <script type="text/javascript" src="../lib/jquery-1.7.1.min.js"></script>
 <script type="text/javascript" src="utils.js"></script>
-<script id="newstuff" type="text/javascript"></script>
+<script type="text/javascript" src="settings_and_signup.js"></script>
 
 <link type="text/css" rel="stylesheet" href="css/main.css" />
 <link type="text/css" rel="stylesheet" href="css/settings.css" />
 
 <script type ="text/javascript">
-var username;
-
-//check for saved u/p
-//and prompt for login / signup if not found
-//else send straight elsewhere (activities page?)
 
 function init(){
 
@@ -22,28 +17,17 @@ function init(){
     if(creds){
       var arr = creds.split("|");
       username = arr[0];
-      $("#your_name").html(username); 
+      $("#your_name").html(username);
       //send_to_interests();
       select_data_sources();
     }else{
       $(".signin").show();
       $(".settings").hide();
-      send_to_login_signup();
+//      send_to_login_signup();
     }
 
 }
 
-function send_to_login_signup(){
-///  $("#initial_signup").show();
-}
-
-
-function send_to_analytics(){
-  document.location="analytics.html";
-}
-function send_to_interests(){
-  document.location="interests.html";
-}
 
 function check_signin(){
   var u = document.forms["signin"].username.value;
@@ -125,6 +109,10 @@ function check_signup(){
           //alert("ok 2 "+data["status"]+" "+data["message"]);
           //save the data
           localStorage.setItem("creds",u+"|"+p);//@@more secure??
+          $("#step1").click(show_step1).addClass("selected");
+          $("#step2").click(show_step2);
+          $("#step3").click(show_step3);
+
           select_data_sources();
         }, 
         error: function(data){
@@ -136,184 +124,6 @@ function check_signup(){
 
   }
 
-}
-
-function select_data_sources(){
-     $(".signin").hide();
-     $(".settings").show();
-//username needs checking for here
-   if(!username){
-
-     alert("no ysername");
-
-   }else{
-    var url = bc_url+"user/"+username+"?apikey="+app_key;
-//    $("#newstuff").attr("src",url);
-
-    $("#initial_signup").hide();
-    $("#data_sources").show();
-    $("#step1").removeClass("selected");
-    $("#step2").addClass("selected");
-
-      $.ajax({
-        url:url,
-        dataType: "json",
-        type: "GET",
-        success: function(data){
-          write_data_sources(data,username);
-        },
-        error: function(data){
-          console.log("not ok 3 "+data["status"]+" "+data["message"]);
-          alert("failed");
-        }
-      });
-
-
-  }
-
-}
-
-///add services
-
-
-function send_to_service(service){
-
-// alert(service);
-
-
- if(!username){
-  alert("no username");
- }else{
-
-   if(service=="twitter"){
-
-
-     var url =bc_url+"user/oauth/token/twitter/"+username+"?redirect=http://"+return_part+"signup.html";
-console.log(url);
-     document.location=url;
-   }else if(service=="facebook"){
-     var url =bc_url+"user/oauth/token/facebook/"+username+"?redirect=http://"+return_part+"signup.html";
-     document.location=url;
-   }else if(service=="lastfm"){
-
-     var url ="http://www.last.fm/api/auth/?api_key=9f57b916d7ab90a7bf562b9e6f2385f0&cb="+bc_url+"user/auth/callback/lastfm/"+username+"/"+encodeURIComponent(encodeURIComponent(return_part+"signup.html"));
-console.log(url);
-     document.location=url;
-   }else{
-alert("not implemented yet "+service);
-   }
-
- }
-
-
-}
-
-function write_data_sources(data,un){
-  console.log(data);
-
-  $("#your_name").html(un); 
-
-  var all_services = ["facebook","twitter","lastfm","gomiso"];
-  var services = data["object"]["services"];
-
-
-  for (var s in all_services){
-     var ss = all_services[s];
-console.log("ss");
-console.log(ss);
-console.log(services[ss]);
-
-     if(services[ss]){
-               
-       $("#"+ss).find(".grey").html("Added");
-       $("#"+ss).find(".grey").show();
-       $("#"+ss).find(".blue").html("Remove");
-       $("#"+ss).unbind('click');
-       $("#"+ss).click(function() {
-        var pid = $(this).attr("id");
-        remove_service(pid);
-
-//        alert("not implemented yet - service "+pid+" should be removed here");
-        return false;
-       })
-     }else{
-       $("#"+ss).unbind('click');
-       $("#"+ss).click(function() {
-        var pid = $(this).attr("id");
-//alert(ss);
-        send_to_service(pid);
-        return false;
-       })
-
-     }
-
-  }
-  
-
-}
-
-
-function remove_service(service_id){
-
-    var url = bc_url+"user/source/"+username+"/"+service_id+"?apikey="+app_key;
-    console.log(url);
-
-      $.ajax({
-        url:url,
-        dataType: "json",
-        type: "DELETE",
-        success: function(data){
-           service_removal_result(data,service_id);
-        },
-        error: function(data){
-          console.log("not ok 3 "+data["status"]+" "+data["message"]);
-          alert("failed");
-        }
-      });
-
-}
-
-function service_removal_result(data,service_id){
-  console.log(data);
-  console.log(service_id);
-  if(data["status"]=="OK"){
-       $("#"+service_id).find(".grey").html("Removed");
-       $("#"+service_id).find(".grey").show();
-       $("#"+service_id).find(".blue").html("Add again");
-       $("#"+service_id).unbind('click');
-       $("#"+service_id).click(function() {
-        var pid = $(this).attr("id");
-        send_to_service(pid);
-        return false;
-       })
-  }
-}
-
-function show_step1(){
-  $("#step1").addClass("selected");
-  $("#step2").removeClass("selected");
-  $("#step3").removeClass("selected");
-  $("#data_sources").show();
-  $("#privacy").hide();
-  $("#export").hide();
-
-}
-function show_step2(){
-  $("#step1").removeClass("selected");
-  $("#step2").addClass("selected");
-  $("#step3").removeClass("selected");
-  $("#data_sources").hide();
-  $("#privacy").show();
-  $("#export").hide();
-
-}
-function show_step3(){
-  $("#step1").removeClass("selected");
-  $("#step2").removeClass("selected");
-  $("#step3").addClass("selected");
-  $("#data_sources").hide();
-  $("#privacy").hide();
-  $("#export").show();
 }
 
 
@@ -364,9 +174,9 @@ function show_step3(){
  <div id="whitebox" class="whitebox">
    <div class="options">
      <div class="title">Sign Up</div>
-     <div id="step1" class="option selected" onclick="show_step1()">DATA SOURCES</div>
-     <div id="step2" class="option" onclick="show_step2()">PRIVACY AND SHARING</div>
-     <div id="step3" class="option" onclick="show_step3()">EXPORT / DELETE</div>
+     <div id="step1" class="option">DATA SOURCES</div>
+     <div id="step2" class="option">PRIVACY AND SHARING</div>
+     <div id="step3" class="option">EXPORT / DELETE</div>
 
    </div>
 
@@ -399,12 +209,6 @@ if you wish.</span></li>
 
       </ul>
       <button name="next" value="next" class='submit'>NEXT</button>
-      <div id="privacy" style="display:none">
-       Privacy and sharing - @@todo
-      </div>
-      <div id="export" style="display:none">
-       Export / delete
-      </div>
 
      </form>
      </div>
@@ -419,6 +223,24 @@ if you wish.</span></li>
        </div>
       <button name="next" value="next" class='submit' onclick='send_to_interests()'>SEE YOUR PROFILE</button>
     </div>
+
+
+     <div id="privacy" style="display:none">
+       Privacy and sharing - @@todo
+     </div>
+
+     <div id="export" style="display:none">
+
+       <div class='normal'>You can export your data or delete your account here</div>
+       <div style='padding:50px;'>
+
+         <div id='exp' onclick='export_data()'><span class='grey'></span><span class='blue'>Export your data</span></div><br />
+
+         <div id='del' onclick='delete_data()'><span class='grey'></span><span class='blue'>Delete your account</span></div><br />
+
+       </div>
+     </div>
+
 
    </div>
 
@@ -446,6 +268,9 @@ if you wish.</span></li>
 content based on your interests</div>
 
  </div>
+
+ <div id='bg' style='display:none;' onclick='javascript:close_lightbox()'></div>
+
 
 </body>
 

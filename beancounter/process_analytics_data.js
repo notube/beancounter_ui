@@ -170,7 +170,7 @@ console.log(data);
      if(fav_genre_num>0){
        var pcpg = fav_genre_num*100;
        pcpg = pcpg.toFixed(2);
-       result.push({"text":"Is your favourite genre (in "+pcpg+"% of things you've mentioned recently)", "type":"text", "value": fav_genre});
+       result.push({"text":"Is your favourite interest (in "+pcpg+"% of things you've mentioned recently)", "type":"text", "value": fav_genre});
      }
 
 //top 5

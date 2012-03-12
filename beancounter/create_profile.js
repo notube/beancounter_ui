@@ -29,15 +29,69 @@ function check_if_profiled(data){
   console.log("checking if profiled "+username);
   console.log(data);
   var msg = data["message"];
-  if(msg && msg.match("profiled")){
-    console.log("ok - profiled");
-    get_profile();    
+  if(msg.match("not profiled")){//either the crawler didn;t complete or teh profiler didn;t start
+
+//so try it now
+    console.log("!!!! crawling or profileing failed for some reason");
+    go_crawl();
+
   }else{
-    console.log("not profiled yet...checking again in 10 secs");
-    setTimeout("check_for_profile()",10000);
-  } 
+
+    if(msg && msg.match("profiled")){
+      console.log("ok - profiled");
+      get_profile();    
+    }else{
+      console.log("not profiled yet...checking again in 10 secs");
+      setTimeout("check_for_profile()",10000);
+    } 
+  }
+}
+
+
+function go_crawl(){
+  //when this completes, go profiler
+    var url = bc_url+"user/activities/update/"+username+"?apikey="+app_key;
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+          console.log("triggering profiling");
+          go_profiler();
+        },
+        error: function(data){
+
+          console.log("****not ok 10 "+data["status"]+" "+data["message"]);
+          console.log(data);
+//          alert("failed[5]");
+        }
+      });
 
 }
+
+
+function go_profiler(){
+  //when this completes, go profiler
+    var url = bc_url+"user/profile/update/"+username+"?apikey="+app_key;
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+           console.log("profiling triggered");
+           setTimeout("check_for_profile()",10000);
+        },
+        error: function(data){
+          console.log("not ok 11 "+data["status"]+" "+data["message"]);
+          alert("failed[6]");
+        }
+      });
+
+}
+
+
 
 
 function get_profile(){

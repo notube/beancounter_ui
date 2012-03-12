@@ -83,8 +83,10 @@ function go_crawl(){
           go_profiler();
         },
         error: function(data){
-          console.log("not ok 10 "+data["status"]+" "+data["message"]);
-          alert("failed[5]");
+
+          console.log("****not ok 10 "+data["status"]+" "+data["message"]);
+          console.log(data);
+//          alert("failed[5]");
         }
       });
 

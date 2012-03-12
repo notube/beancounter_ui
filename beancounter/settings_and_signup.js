@@ -43,12 +43,96 @@ function send_to_service(service){
 }
 
 
+//previous data sources - needed for triggering
+function diff_data_sources(new_services){
+  console.log("new services");
+  console.log(new_services);
+  var old_services = localStorage.getItem(username+"|services");
+  if(new_services && new_services.length>0){
+    localStorage.setItem(username+"|services",new_services.join("|"))
+      console.log("old_services");
+      console.log(old_services);
+    if(old_services){
+      var ns = new_services.join("|");
+      if(ns==old_services){
+        console.log("eq");
+      }else{
+        console.log("new source so triggering crawl");
+        go_crawl();
+      }
+    }else{
+      console.log("new source (none previously) so triggering crawl");
+      go_crawl();
+    }
+  }else{
+    alert("no new services");
+  }
+}
+
+
+function go_crawl(){
+  //when this completes, go profiler
+    var url = bc_url+"user/activities/update/"+username+"?apikey="+app_key;
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+          console.log("triggering profiling");
+          go_profiler();
+        },
+        error: function(data){
+          console.log("not ok 10 "+data["status"]+" "+data["message"]);
+          alert("failed");
+        }
+      });
+
+}
+
+
+function go_profiler(){
+  //when this completes, go profiler
+    var url = bc_url+"user/profile/update/"+username+"?apikey="+app_key;
+
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+           console.log("profiling triggered");
+        },
+        error: function(data){
+          console.log("not ok 11 "+data["status"]+" "+data["message"]);
+          alert("failed");
+        }
+      });
+
+}
+
+
 function write_data_sources(data){
   console.log(data);
 
   var all_services = ["facebook","twitter","lastfm","gomiso"];
   var services = data["object"]["services"];
 
+//first check if any are new
+
+
+  var new_services = [];
+  for (var s in all_services){
+     var ss = all_services[s];
+     var sss = services[ss];
+     if(sss){
+       new_services.push(ss);
+     }
+  }
+console.log("new_services");
+console.log(new_services);
+  diff_data_sources(new_services);
+
+//loop again for appearance
 
   for (var s in all_services){
      var ss = all_services[s];

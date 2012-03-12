@@ -226,8 +226,6 @@ console.log("RENDER ACTIVITUES");
 
   for(var a in the_acts){
     var act = the_acts[a];
-console.log("act");
-console.log(act);
 
     var url = act["object"]["url"];
     var interests = activities_interests[url];

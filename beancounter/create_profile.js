@@ -1,10 +1,49 @@
 //get the profile and do something with it
 //needs decrufting
 
-var c_callback = null;
 
-function get_profile(username,callback){
-  c_callback = callback;
+function check_for_profile(){
+
+//first check if profiled
+
+  var url = bc_url+"user/profile/status/"+username+"?apikey="+app_key;
+  console.log(url);
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+           check_if_profiled(data);
+        },
+        error: function(data){
+          console.log(data);
+          alert("failed");
+
+        }
+      });
+
+}
+
+
+function check_if_profiled(data){
+  console.log("checking if profiled "+username);
+  console.log(data);
+  var msg = data["message"];
+  if(msg && msg.match("profiled")){
+    console.log("ok - profiled");
+    get_profile();    
+  }else{
+    console.log("not profiled yet...checking again in 10 secs");
+    setTimeout("check_for_profile()",10000);
+  } 
+
+}
+
+
+function get_profile(){
+
+//then get the profile
+
   var url = bc_url+"user/profile/"+username+"?apikey="+app_key;
 console.log(url);
       $.ajax({
@@ -21,7 +60,6 @@ console.log(url);
         }
       });
 
-//  $("#newstuff").attr("src",url);
 }
 
 var max_weight = 1;
@@ -52,6 +90,7 @@ console.log(data);
       $("#profile_status").html("Your profile is public");
     }
   }
-  c_callback();
+//  c_callback();
+  process_interests();
 }
 

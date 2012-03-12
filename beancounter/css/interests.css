@@ -115,3 +115,10 @@ color:white;
 .activity{
  margin-top:20px;
 }
+
+.bluebox .title{
+ padding:20px;
+ font-size:16px;
+ width:30%;
+ float:left;
+}

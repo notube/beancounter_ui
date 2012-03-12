@@ -65,7 +65,7 @@ function diff_data_sources(new_services){
       go_crawl();
     }
   }else{
-    alert("no new services");
+    console.log("no new services");
   }
 }
 
@@ -84,7 +84,7 @@ function go_crawl(){
         },
         error: function(data){
           console.log("not ok 10 "+data["status"]+" "+data["message"]);
-          alert("failed");
+          alert("failed[5]");
         }
       });
 
@@ -104,7 +104,7 @@ function go_profiler(){
         },
         error: function(data){
           console.log("not ok 11 "+data["status"]+" "+data["message"]);
-          alert("failed");
+          alert("failed[6]");
         }
       });
 
@@ -112,6 +112,7 @@ function go_profiler(){
 
 
 function write_data_sources(data){
+  console.log("WRITING DATA SOURCES");
   console.log(data);
 
   var all_services = ["facebook","twitter","lastfm","gomiso"];
@@ -186,15 +187,28 @@ function really_remove_service(service_id){
         },
         error: function(data){
           console.log("not ok delete "+data["status"]+" "+data["responseText"]);
-          alert("failed");
+          alert("failed[7]");
         }
       });
 
 }
 
+////here?
+
 function service_removal_result(data,service_id){
   console.log(data);
   console.log(service_id);
+///localStorage.removeItem("creds");
+  var old_services = localStorage.getItem(username+"|services");
+  //make sure serviecs storage is up to date
+  if(old_services){
+    old_services = old_services.replace("|"+service_id,"");
+    //if it's the only one
+    old_services = old_services.replace(service_id,"");
+    localStorage.setItem(username+"|services",old_services);
+  }
+
+///here
   if(data["status"]=="OK"){
        $("#"+service_id).find(".grey").html("Removed");
        $("#"+service_id).find(".grey").show();
@@ -274,7 +288,6 @@ function remove_service(serv){
 
 function show_delservicebox(serv){
 console.log("showing del service box "+serv);
-  ////here
   //todel deltext
   $("#todel").click(function(){
     really_remove_service(serv);

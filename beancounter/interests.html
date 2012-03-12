@@ -6,10 +6,28 @@
 <script type="text/javascript" src="../lib/jquery-1.7.1.min.js"></script>
 <script type="text/javascript" src="utils.js"></script>
 <script type="text/javascript" src="create_profile.js"></script>
+<script type="text/javascript" src="../lib/spin.min.js"></script>
 <script id="newstuff" type="text/javascript"></script>
 
 <script type="text/javascript">
 
+//spinner stuff
+
+//http://fgnass.github.com/spin.js/
+var opts = {
+  lines: 12, // The number of lines to draw
+  length: 5, // The length of each line
+  width: 3, // The line thickness
+  radius: 5, // The radius of the inner circle
+  color: '#fff', // #rbg or #rrggbb
+  speed: 1, // Rounds per second
+  trail: 100, // Afterglow percentage
+  shadow: true // Whether to render a shadow
+};
+
+
+
+var username;
 
 function init(){
 
@@ -18,7 +36,11 @@ function init(){
     var arr = creds.split("|");
     username = arr[0];
     $("#your_name").html(username);
-    get_profile(username, process_interests);
+
+    var target = document.getElementById('spinner');//??
+    var spinner = new Spinner(opts).spin(target);
+
+    check_for_profile();
   }else{
 //no creds - 
     send_to_login_signup();
@@ -34,7 +56,7 @@ function send_to_login_signup(){
 
 function process_interests(){
 
-  if(interests){
+  if(interests && interests.length>0){
 
     var html = [];
 
@@ -181,11 +203,15 @@ function process_interests(){
       html.push("</div>");
       html.push("</div>");
 
-
     }
-
+    $("#pleasewait").empty();
     $("#interests").html(html.join("\n"));
-  }//end if interest
+
+  }else{
+    $("#pleasewait").empty();
+    $("#interests").html("<p>Sorry we didn't find any interests for you this time. You could try addding more sources under your <a href='settings.html'>settings</a>.</p>");
+  }
+
 }
 
 
@@ -261,9 +287,13 @@ below. <a href="">Our Privacy Policy</a>: you are always in control of your data
 
  <div class='bluebox'>
     <div class="title">YOUR INTERESTS</div>
+    <div class="title" id='pleasewait'>Profiling you now... 
+      <div id='spinner'></div>
+    </div>
  </div>
 
  <div class="interests" id="interests">
+
 
  </div>
 

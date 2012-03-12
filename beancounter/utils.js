@@ -1,9 +1,9 @@
 
 //config
-var bc_url ="http://localhost/~elizabeth/notube-platform/rest/";
-var app_key = "b21f371ea80942b7b6f5346e9761f814";
-var return_part = "localhost/~elizabeth/beancounter_ui/beancounter/";
+var bc_url ="http://moth.notube.tv/notube-platform/rest/";
+var app_key = "ecb1e9fc90d14b63a3fe70497cbf1d69";
 var n_screen_api_root="http://nscreen.notu.be/iplayer_dev/api/";
+var return_part = "moth.notube.tv/beancounter/beancounter_ui/beancounter/";
 
 //open and close the settings button
 

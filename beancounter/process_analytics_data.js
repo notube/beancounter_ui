@@ -49,7 +49,6 @@ var user_id;
         }
       });
 
-//     $("#profile").attr("src",url);
 
 }
 
@@ -60,6 +59,7 @@ var user_id;
    function process_profile(data){
      var result = [];
 
+console.log("processing profile");
 console.log(data);
      user_id = data["object"]["id"];
 
@@ -90,13 +90,8 @@ console.log(data);
 
      var top_two = [];
 
-     var schedule_hash = {};
-
-     var my_count = 0;
-
 //loop throgh genres distinuisghing the difefrent types
      var n = 0;
-     var got_already = []; //keeping track of duplicate activities
 
      for(var g in genres){
       var a_g = genres[g];
@@ -125,96 +120,172 @@ console.log(data);
       }
       n = n+1;
 
-      var acts = a_g["activities"];
+    }//end genres
 
-      for(var i in acts){
-        var act = acts[i];
-        var dd = act["context"]["date"];
-        var date = new Date(dd);
-        var yr = date.getYear()+1900;
-        var just_date = new Date(yr,date.getMonth(),date.getDate());
+//favourite genre
 
-        var text_time = process_date(date);
-        var item_type= act["object"]["verb"];
+    if(fav_genre_num>0){
+       var pcpg = fav_genre_num*100;
+       pcpg = pcpg.toFixed(2);
+       result.push({"text":"Is your favourite interest (in "+pcpg+"% of things you've mentioned recently)", "type":"text", "value": fav_genre});
+    }
 
-//        if(my_count<7){
-          var val = schedule_hash[just_date];
-          var title = act["object"]["text"];
-          var pid = act["object"]["url"];
+//top 5
+    var d1 = [];
+    var tf = {};
+    for(var c in top_five_current){
+       d1.push([0,parseInt(c),top_five_current[c]]);
+       tf[top_five[c]]=top_five_current[c]*100;
+    }
+
+//     result.push({"text":"Top 5 interests","type":"top_five","value":[d1,null,top_five]});
+//alternative - pie
+
+    result.push({"text":"Top "+top_five_current.length+" interests","type":"pie","value":tf});
+
+
+//here call up slice and getNumberOfActivitiesByVerb and getNumberOfActivitiesByService
+
+    get_activities(data,username,result);
+
+}//end method
+
+
+
+
+function get_activities(profile,username,result){
+  var url = bc_url+"user/activities/"+username+"?apikey="+app_key;
+      console.log(url);
+      $.ajax({
+        url:url,
+        dataType: "json",
+        type: "GET",
+        success: function(data){
+          render_activities(profile,data,result);
+        },
+        error: function(data){
+          console.log("not ok 5 "+data["status"]+" "+data["message"]);
+          alert("failed");
+        }
+      });
+}
+
+
+
+
+function render_activities(data,activities2,result){
+console.log("RENDER ACTIVITUES");
+
+  var schedule_hash = {};
+  var got_already = []; //keeping track of duplicate activities
+
+  var interests = data["object"]["interests"];
+
+
+  var activities = {};
+  var activities_interests = {};
+
+//loop throug so we can sort them properly
+  for(var i in interests){
+    var ins = interests[i];
+    var term = ins["reference"];
+    term = term.replace(/.*\//,"");
+    term = term.replace(/_/g," ");
+    var acts = ins["activities"];
+    for (var a in acts){
+       var act = acts[a];
+       var act2 = act["object"]["url"];
+       var a_t = activities_interests[act2];
+       if(a_t){
+         a_t.push(term);
+       }else{
+         a_t = [];
+         a_t.push(term);
+         activities_interests[act2] = a_t;
+       }
+    }
+
+  }
+
+
+//ok reverse the activities2 array and loop through it
+//reversing doesn't help if 2 sources
+//need to sort by date
+
+  var the_acts = activities2["object"];
+
+  the_acts.sort(function(a, b) {
+      a = a["context"]["date"];
+      b = b["context"]["date"];
+
+      return a > b ? -1 : (a < b ? 1 : 0);
+  });
+
+
+  var my_count = 0;
+
+  for(var a in the_acts){
+    var act = the_acts[a];
+console.log("act");
+console.log(act);
+
+    var url = act["object"]["url"];
+    var interests = activities_interests[url];
+    
+    var date = act["context"]["date"];
+    var verb = act["verb"];
+    var service = act["context"]["service"];
+    var dd = act["context"]["date"];
+    var text = act["object"]["text"];
+    if(!text || text==""){
+      text = act["object"]["name"];
+    }
+
+    var date = new Date(dd);
+    var yr = date.getYear()+1900;
+    var just_date = new Date(yr,date.getMonth(),date.getDate());
+
+    var text_time = process_date(date);
+ 
+    var val = schedule_hash[just_date];
 
           if(val){
 
-            if($.inArray(title, got_already)==-1){
-             val.push({"title":title,"link":pid,"time":date,"texttime":text_time,"type":item_type});
-              got_already.push(title);
+            if($.inArray(url, got_already)==-1){
+             val.push({"title":text,"link":url,"time":date,"texttime":text_time,"type":verb});
+              got_already.push(url);
             }else{
 
             }
           }else{
 //a new day
             var arr = [];
-            arr.push({"title":title,"link":pid,"time":date,"texttime":text_time,"type":item_type});
+            arr.push({"title":text,"link":url,"time":date,"texttime":text_time,"type":verb});
             schedule_hash[just_date] = arr;
             my_count = my_count+1;
-            got_already.push(title);
+            got_already.push(url);
           }
-//        }
-      }
+
 //end loop thourgh acts
 
-     }//end loop
+  }//end loop
 
 
-//favourite genre
+  if(schedule_hash){
+    result.push({"text":"What you've talked about recently","type":"activities_grouped","value":schedule_hash});
+  }
 
-     if(fav_genre_num>0){
-       var pcpg = fav_genre_num*100;
-       pcpg = pcpg.toFixed(2);
-       result.push({"text":"Is your favourite interest (in "+pcpg+"% of things you've mentioned recently)", "type":"text", "value": fav_genre});
-     }
+console.log("thecallback");
+console.log(result);
 
-//top 5
-     var d1 = [];
-     var tf = {};
-     for(var c in top_five_current){
-       d1.push([0,parseInt(c),top_five_current[c]]);
-       tf[top_five[c]]=top_five_current[c]*100;
-     }
+  thecallback(result);
 
-//     result.push({"text":"Top 5 interests","type":"top_five","value":[d1,null,top_five]});
-//alternative - pie
-
-     result.push({"text":"Top "+top_five_current.length+" interests","type":"pie","value":tf});
-
-
-//could also keep track of genres per activity here@@
-
-     if(schedule_hash){
-       result.push({"text":"What you've talked about recently","type":"activities_grouped","value":schedule_hash});
-     }
-
-     thecallback(result);
-
-//here call up slice and getNumberOfActivitiesByVerb and getNumberOfActivitiesByService
-
-//@@fixme backend broken
-
-//get a few recent activities
-//no need for this now
-/*
-     var url = bc_url+"jsonp/user/activities/"+username+"?apikey="+app_key+"&callback=process_activities";
-     console.log(url);
-     $("#activities").attr("src",url);
-*/
-
-   }//end genres
-
-
+}
 
 
 //utility method - prettify the date
 
-  function process_date(then){
+function process_date(then){
 
    var now = new Date();
 
@@ -250,5 +321,5 @@ console.log(data);
     }
    }
    return date_text;
-  }
+}
 

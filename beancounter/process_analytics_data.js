@@ -239,13 +239,17 @@ console.log("RENDER ACTIVITUES");
       text = act["object"]["name"];
     }
 
-    var date = new Date(dd);
-    var yr = date.getYear()+1900;
-    var just_date = new Date(yr,date.getMonth(),date.getDate());
+    if(dd){
 
-    var text_time = process_date(date);
+      var nn = switch_date_format(dd);
+
+      var date = new Date(nn);
+      var yr = date.getYear()+1900;
+      var just_date = new Date(yr,date.getMonth(),date.getDate());
+
+      var text_time = process_date(date);
  
-    var val = schedule_hash[just_date];
+      var val = schedule_hash[just_date];
 
           if(val){
 
@@ -264,6 +268,7 @@ console.log("RENDER ACTIVITUES");
             got_already.push(url);
           }
 
+     }//end if dd
 //end loop thourgh acts
 
   }//end loop
@@ -273,51 +278,8 @@ console.log("RENDER ACTIVITUES");
     result.push({"text":"What you've talked about recently","type":"activities_grouped","value":schedule_hash});
   }
 
-console.log("thecallback");
-console.log(result);
 
   thecallback(result);
 
-}
-
-
-//utility method - prettify the date
-
-function process_date(then){
-
-   var now = new Date();
-
-   var a_week_ago = new Date();
-   a_week_ago.setDate(a_week_ago.getDate() - 7);
-
-   var date_text = "";
-
-   if(then.getDate()==now.getDate() && then.getMonth()==now.getMonth() && then.getYear()==now.getYear()){
-    var hrs = now.getHours() - then.getHours();
-
-    var int_hrs = parseInt(hrs);
-    if(int_hrs==0){
-      var mins = now.getMinutes() - then.getMinutes();
-      var int_mins = parseInt(mins);
-      date_text = ""+parseInt(mins)+" minutes ago";
-    }else{
-      if(int_hrs ==1){
-        date_text = ""+parseInt(hrs)+" hour ago";
-      }else{
-        date_text = ""+parseInt(hrs)+" hours ago";
-      }
-    }
-
-
-   }else{
-
-    if(then > a_week_ago){
-      date_text = "Last "+days[then.getDay()];
-    }else{
-      var yr = then.getYear()+1900;
-      date_text = days[then.getDay()]+", "+then.getDate()+" "+months[then.getMonth()]+" "+yr;
-    }
-   }
-   return date_text;
 }
 

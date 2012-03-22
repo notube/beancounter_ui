@@ -137,7 +137,6 @@ function render_activities(data,activities2){
     var act = the_acts[a];
     var url = act["object"]["url"];
     var interests = activities_interests[url];
-    
     var date = act["context"]["date"];
     var verb = act["verb"];
 //    var hashtag = act["object"]["hashTags"][0];
@@ -154,12 +153,23 @@ function render_activities(data,activities2){
            html.push(" to");
          }
          html.push(" <a href=\""+url+"\">"+interests.join(", ")+"</a>");
+    }else{
+      if(verb=="LIKE"){
+         html.push(" <a href=\""+url+"\">"+act["object"]["name"]+"</a>");
+      }
+      if(verb=="LISTEN"){
+           html.push(" to");
+           html.push(" <a href=\""+url+"\">"+act["object"]["name"]+"</a>");
+      }
     }
     html.push(" on <a href=\""+url+"\">"+service+"</a><br />");
 
     if(text && text!=""){
       html.push("'"+text+"'<br />");
     }
+
+
+    date = switch_date_format(date);
     html.push("<span class='teeny'>"+process_date(date)+"</span></div>");
  
   }  
